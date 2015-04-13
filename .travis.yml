@@ -4,7 +4,6 @@ env: PKG_CONFIG_PATH=local/lib/pkgconfig LD_LIBRARY_PATH=local/lib
 
 before_install:
 compiler:
-  - clang
   - gcc
 before_install:
   - bash .travis-before-install.sh
