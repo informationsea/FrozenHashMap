@@ -1,5 +1,5 @@
 AC_PREREQ([2.68])
-AC_INIT([FrozenHash], [0.0.1], [okamura@informationsea.info])
+AC_INIT([frozenhashmap], [0.0.1], [okamura@informationsea.info])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([-Wall])
 
@@ -15,6 +15,7 @@ AC_CONFIG_MACRO_DIR([m4])
 ACLOCAL_AMFLAGS="-I m4"
 AM_SILENT_RULES([yes])
 AM_PROG_LIBTOOL([shared])
+AX_CREATE_PKGCONFIG_INFO
 
 m4_ifdef([AC_CHECK_CPPCUTTER], [AC_CHECK_CPPCUTTER], [ac_cv_use_cutter="no"])
 AM_CONDITIONAL([WITH_CUTTER], [test "$ac_cv_use_cutter" != "no"])

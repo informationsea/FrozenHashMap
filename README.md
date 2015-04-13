@@ -1,4 +1,4 @@
-Frozen Hash Map
+Frozen Hash Map [![Build Status](https://travis-ci.org/informationsea/FrozenHashMap.svg)](https://travis-ci.org/informationsea/FrozenHashMap)
 ===============
 
 Fast Immutable Hash Map

@@ -38,11 +38,12 @@ stamp-h1
 /configure
 /aclocal.m4
 /build-aux
-/m4
 /libtool
 /autom4te.cache
 /ltmain
-
+*.pc
+frozenhashmap-uninstalled.sh
+frozenhashmap-*.tar.*
 
 /test/run-test.sh.log
 /test/run-test.sh.trs
