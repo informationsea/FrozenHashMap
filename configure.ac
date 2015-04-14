@@ -15,7 +15,6 @@ AC_CONFIG_MACRO_DIR([m4])
 ACLOCAL_AMFLAGS="-I m4"
 AM_SILENT_RULES([yes])
 AM_PROG_LIBTOOL([shared])
-AX_CREATE_PKGCONFIG_INFO
 
 m4_ifdef([AC_CHECK_CPPCUTTER], [AC_CHECK_CPPCUTTER], [ac_cv_use_cutter="no"])
 AM_CONDITIONAL([WITH_CUTTER], [test "$ac_cv_use_cutter" != "no"])
@@ -49,5 +48,5 @@ AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MMAP
 AC_CHECK_FUNCS([memset strtoul])
 
-AC_CONFIG_FILES([src/Makefile Makefile test/Makefile])
+AC_CONFIG_FILES([src/Makefile Makefile test/Makefile frozenhashmap.pc])
 AC_OUTPUT

@@ -34,7 +34,8 @@ stamp-h1
 *.tar.gz
 /autoscan.log
 /configure.scan
-*.in
+Makefile.in
+config.h.in
 /configure
 /aclocal.m4
 /build-aux
