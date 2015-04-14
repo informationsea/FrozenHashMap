@@ -1,7 +1,7 @@
 language: cpp
 
 env: PKG_CONFIG_PATH=local/lib/pkgconfig LD_LIBRARY_PATH=local/lib
-
+sudo: true
 before_install:
 compiler:
   - gcc
