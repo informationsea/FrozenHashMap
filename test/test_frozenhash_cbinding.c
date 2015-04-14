@@ -37,6 +37,8 @@ void test_frozenhash_builder(void){
 
     cut_assert(CFrozenHashMapOpen(map, "./tmp/dbfile.dat"));
 
+    cut_assert_equal_int(3, CFrozenHashMapCount(map));
+
     size_t length;
     const char *data;
     data = CFrozenHashMapGet(map, "Hi", 2, &length);
