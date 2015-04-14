@@ -23,8 +23,6 @@ FrozenMapBuilder::FrozenMapBuilder(bool ainmemory) : inmemory(ainmemory), tempdi
                                        hash2key_path(""), data_path(""), hashtable_path(""), valuetable_path("")
 {
     char *debug = ::getenv("FROZENHASH_DEBUG");
-    fprintf(stderr, "debug: %s\n", debug);
-    fprintf(stderr, "home: %s\n", ::getenv("HOME"));
     if (debug != NULL)
         debugMode = true;
     DEBUG("Calling Constructor");
@@ -206,38 +204,6 @@ bool FrozenMapBuilder::build(int fd)
                 
                 valuepos += keylen;
             } while(valuepos < vsp);
-
-            // int valueindex = 0;
-            // do {
-            //     char hash2key_key[30];
-            //     size_t hash2key_keysize = snprintf(hash2key_key, sizeof(hash2key_key)-1, "%lu-%d", hashvalue, valueindex);
-            //     DEBUG("loading %s", hash2key_key);
-                
-            //     size_t data_keysize;
-            //     char *data_key = hash2key.get(hash2key_key, hash2key_keysize, &data_keysize);
-            //     if (data_key == NULL) {
-            //         if (hash2key.error().code() != BasicDB::Error::NOREC) {
-            //             DEBUG("Cannot get hash2key value for %s (%s)\n", hash2key_key, hash2key.error().message());
-            //             return false;
-            //         }
-            //         break;
-            //     }
-
-            //     size_t data_valuesize;
-            //     char *data_value = data.get(data_key, data_keysize, &data_valuesize);
-            //     if (data_value == NULL) {
-            //         DEBUG("Cannot get hash2key value for %s (%s)\n", data_key, data.error().message());
-            //         return false;
-            //     }
-
-            //     DEBUG("writing %s: %s", data_key, data_value);
-
-            //     valuetable.write(data_key, data_keysize);
-            //     valuetable.write(data_value, data_valuesize);
-            //     valueindex += 1;
-            //     wrote_data_count += 1;
-            // } while(1);
-
             delete key;
         } while (1);
         
