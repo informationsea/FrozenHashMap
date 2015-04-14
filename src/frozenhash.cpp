@@ -103,10 +103,39 @@ std::string FrozenMap::get(const std::string &key)
 }
 
 
+FrozenMapCursor::FrozenMapCursor(FrozenMap *parent): m_parent(parent), valuetable(0)
+{
+    valuetable = new ValueTableReader((const char*)m_parent->valuetable_map, m_parent->header->valuetable_size);
+}
 
+FrozenMapCursor::~FrozenMapCursor()
+{
+    delete valuetable;
+}
 
+FrozenMap *FrozenMapCursor::db()
+{
+    return m_parent;
+}
 
+bool FrozenMapCursor::nextString(std::pair<std::string, std::string> *pair)
+{
+    const char *key, *value;
+    size_t keylen, valuelen;
+    bool ok = next(&key, &keylen, &value, &valuelen);
+    if (!ok) return false;
+    pair->first = std::string(key, keylen);
+    pair->second = std::string(value, valuelen);
+    return true;
+}
 
-
-
-
+bool FrozenMapCursor::next(const char **key, size_t *keylen, const char **value, size_t *valuelen)
+{
+    *key = valuetable->readNext(keylen);
+    if (*key == NULL)
+        return false;
+    *value = valuetable->readNext(valuelen);
+    if (*value == NULL)
+        return false;
+    return true;
+}

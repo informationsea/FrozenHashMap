@@ -5,11 +5,14 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <utility>
 
 class ValueTableReader;
 struct FrozenHashMapHeader;
+class FrozenMapCursor;
 
 class FrozenMap {
+    friend class FrozenMapCursor;
 public:
     FrozenMap();
     virtual ~FrozenMap();
@@ -29,11 +32,16 @@ private:
 };
 
 class FrozenMapCursor {
+public:
+    FrozenMapCursor(FrozenMap *parent);
+    virtual ~FrozenMapCursor();
+    FrozenMap *db();
+    bool nextString(std::pair<std::string, std::string> *pair);
+    bool next(const char **key, size_t *keylen, const char **value, size_t *valuelen);
     
+private:
+    FrozenMap *m_parent;
+    ValueTableReader *valuetable;
 };
 
 #endif /* FROZENHASH_H */
-
-
-
-

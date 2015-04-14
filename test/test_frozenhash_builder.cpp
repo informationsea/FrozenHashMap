@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <map>
 
 namespace frozenhashbuilder {
 
@@ -80,6 +81,17 @@ namespace frozenhashbuilder {
         data = map.get("Push", 4, &length);
         cut_assert(data);
         cut_assert_equal_memory("OK-Push", 7, data, length);
+
+        FrozenMapCursor cursor(&map);
+        std::map<std::string, std::string> tmp;
+        std::pair<std::string, std::string> pair;
+        while (cursor.nextString(&pair)) {
+            tmp[pair.first] = pair.second;
+        }
+        cut_assert_equal_string("OK-Push", tmp["Push"].c_str());
+        cut_assert_equal_string("OK-Hi", tmp["Hi"].c_str());
+        cut_assert_equal_string("OK-Echo", tmp["Echo"].c_str());
+        cut_assert_equal_int(3, tmp.size());
     }
 
     void test_frozenhash_builder2(void){
