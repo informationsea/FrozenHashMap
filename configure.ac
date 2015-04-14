@@ -33,10 +33,9 @@ AC_PROG_RANLIB
 PKG_CHECK_MODULES(kyotocabinet, kyotocabinet >= 1.2.76)
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h stdbool.h string.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_INT8_T
 AC_TYPE_SIZE_T
