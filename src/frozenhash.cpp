@@ -7,12 +7,17 @@
 #include <memory>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <limits.h>
 
 #include "config.h"
 #include "frozenhash.hpp"
 #include "valuetable.hpp"
 #include "MurmurHash3.h"
 #include "common.hpp"
+
+#ifndef UINT64_MAX
+#define UINT64_MAX 0xFFffFFffFFffFFff
+#endif
 
 FrozenMap::FrozenMap() : header(0), hashtable_map(0), valuetable_map(0), valuetable(0)
 {

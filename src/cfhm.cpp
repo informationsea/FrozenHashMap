@@ -26,6 +26,11 @@ bool CFrozenHashMapBuilderPutString(struct CFrozenHashMapBuilder *builder, const
     return builder->builder.put(key, value);
 }
 
+bool CFrozenHashMapBuilderPut(struct CFrozenHashMapBuilder *builder, const char *key, size_t keylen, const char *value, size_t valuelen)
+{
+    return builder->builder.put(key, keylen, value, valuelen);
+}
+
 bool CFrozenHashMapBuilderBuild(struct CFrozenHashMapBuilder *builder, const char *filename)
 {
     return builder->builder.build(filename);

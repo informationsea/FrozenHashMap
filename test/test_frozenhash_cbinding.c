@@ -27,7 +27,7 @@ void test_frozenhash_builder(void){
     cut_assert(CFrozenHashMapBuilderOpen(builder));
     cut_assert(CFrozenHashMapBuilderPutString(builder, "Hi", "OK-Hi"));
     cut_assert(CFrozenHashMapBuilderPutString(builder, "Echo", "OK-Echo"));
-    cut_assert(CFrozenHashMapBuilderPutString(builder, "Push", "OK-Push"));
+    cut_assert(CFrozenHashMapBuilderPut(builder, "Push", 4, "OK-Push", 7));
     cut_assert(CFrozenHashMapBuilderBuild(builder, "./tmp/dbfile.dat"));
     CFrozenHashMapBuilderFree(builder);
 

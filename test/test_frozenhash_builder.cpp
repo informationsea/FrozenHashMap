@@ -61,7 +61,7 @@ namespace frozenhashbuilder {
         cut_assert(builder.open());
         cut_assert(builder.put("Hi", "OK-Hi"));
         cut_assert(builder.put("Echo", "OK-Echo"));
-        cut_assert(builder.put("Push", "OK-Push"));
+        cut_assert(builder.put("Push", 4, "OK-Push", 7));
         cut_assert(builder.build("./tmp/dbfile.dat"));
 
         FrozenMap map;

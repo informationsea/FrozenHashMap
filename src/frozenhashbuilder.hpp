@@ -21,6 +21,7 @@ public:
     bool open(); // call this function first
     
     bool put(const std::string &key, const std::string &value);
+    bool put(const char *key, size_t keylen, const char *value, size_t valuelen);
     
     bool build(int fd);
     bool build(const char *filename);
