@@ -47,6 +47,21 @@ bool FrozenMap::open(int fd, off_t offset)
     if (::read(fd, header, sizeof(struct FrozenHashMapHeader)) != sizeof(struct FrozenHashMapHeader))
         return false;
 
+    if (memcmp(FROZENHASH_HEADER, header->magic, sizeof(FROZENHASH_HEADER)) != 0) {
+        fprintf(stderr, "This file is not frozen hash map database\n");
+        return false;
+    }
+
+    if (header->endian_check != DB_ENDIAN_CHECK) {
+        fprintf(stderr, "Wrong endian\n");
+        return false;
+    }
+
+    if (header->version != DB_FORMAT_VERSION) {
+        fprintf(stderr, "Wrong database format version\n");
+        return false;
+    }
+
     hashtable_map = (uint64_t *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_SHARED, m_fd, offset + header->hashtable_offset);
     if (hashtable_map == MAP_FAILED) return false;
 
@@ -102,6 +117,10 @@ std::string FrozenMap::get(const std::string &key)
     return std::string(value, valuesize);
 }
 
+uint64_t FrozenMap::count()
+{
+    return header->count;
+}
 
 FrozenMapCursor::FrozenMapCursor(FrozenMap *parent): m_parent(parent), valuetable(0)
 {

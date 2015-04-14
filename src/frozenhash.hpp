@@ -21,6 +21,7 @@ public:
     
     const char *get(const char *key, size_t keysp, size_t *valuesp);
     std::string get(const std::string &key);
+    uint64_t count();
     
 private:
     int m_fd;

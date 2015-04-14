@@ -81,6 +81,8 @@ namespace frozenhashbuilder {
         data = map.get("Push", 4, &length);
         cut_assert(data);
         cut_assert_equal_memory("OK-Push", 7, data, length);
+        
+        cut_assert_equal_int(3, map.count());
 
         FrozenMapCursor cursor(&map);
         std::map<std::string, std::string> tmp;
@@ -123,6 +125,7 @@ namespace frozenhashbuilder {
 
         FrozenMap map;
         cut_assert(map.open(("./tmp/dbfile2.dat")));
+        cut_assert_equal_int(47734, map.count());
 
         while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
             char *p = strchr(linebuf, '|');

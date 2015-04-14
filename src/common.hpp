@@ -19,12 +19,18 @@ const char FROZENHASH_HEADER[16] = "FROZENHASHMAP";
 
 struct FrozenHashMapHeader {
     char magic[16];
+    uint64_t endian_check;
+    uint64_t version;
+    uint64_t count;
     uint64_t hashsize;
     uint64_t hashtable_offset;
     uint64_t hashtable_size;
     uint64_t valuetable_offset;
     uint64_t valuetable_size;
 };
+
+#define DB_ENDIAN_CHECK 0x0123456789ABCDEF
+#define DB_FORMAT_VERSION 0x01
 
 #ifndef UINT64_MAX
 #define UINT64_MAX 0xFFffFFffFFffFFff

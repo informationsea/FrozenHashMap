@@ -239,6 +239,9 @@ bool FrozenMapBuilder::build(int fd)
         bzero(&header, sizeof(header));
 
         memcpy(header.magic, FROZENHASH_HEADER, sizeof(header.magic));
+        header.endian_check = DB_ENDIAN_CHECK;
+        header.version = DB_FORMAT_VERSION;
+        header.count = data.count();
         header.hashsize = hashsize;
         header.hashtable_size = hashtable_size;
 
