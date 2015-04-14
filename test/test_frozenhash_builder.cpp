@@ -13,7 +13,7 @@ namespace frozenhashbuilder {
 
     void before(void) {
         const char *env[] =
-            {"FROZENHASH_DEBUG=1",
+            {//"FROZENHASH_DEBUG=1",
              "TMPDIR=./tmp"};
 
         for (size_t i = 0; i < sizeof(env)/sizeof(env[0]); i++) {
@@ -81,6 +81,9 @@ namespace frozenhashbuilder {
         data = map.get("Push", 4, &length);
         cut_assert(data);
         cut_assert_equal_memory("OK-Push", 7, data, length);
+
+        data = map.get("Unknown", 7, &length);
+        cut_assert_null(data);
         
         cut_assert_equal_int(3, map.count());
 
