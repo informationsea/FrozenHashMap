@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <limits.h>
 
 #define HASH_SIZE_FACTOR 1.3
 #define HASH_RANDOM_SEED 1961288601U
@@ -24,5 +25,9 @@ struct FrozenHashMapHeader {
     uint64_t valuetable_offset;
     uint64_t valuetable_size;
 };
+
+#ifndef UINT64_MAX
+#define UINT64_MAX 0xFFffFFffFFffFFff
+#endif
 
 #endif /* COMMON_H */

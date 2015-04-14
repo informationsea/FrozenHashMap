@@ -19,9 +19,14 @@
 #define DEBUG(fmt,...) (debugMode && fprintf(stderr, __FILE__ ": %3d: " fmt "\n" ,__LINE__, ## __VA_ARGS__))
 static bool debugMode = false;
 
-FrozenMapBuilder::FrozenMapBuilder(bool ainmemory) : inmemory(ainmemory), tempdir(""), ready(false),
-                                       hash2key_path(""), data_path(""), hashtable_path(""), valuetable_path("")
+FrozenMapBuilder::FrozenMapBuilder(bool ainmemory) : inmemory(ainmemory), ready(false)
 {
+    bzero(tempdir, sizeof(tempdir));
+    bzero(hash2key_path, sizeof(hash2key_path));
+    bzero(data_path, sizeof(data_path));
+    bzero(hashtable_path, sizeof(hashtable_path));
+    bzero(valuetable_path, sizeof(valuetable_path));
+    
     char *debug = ::getenv("FROZENHASH_DEBUG");
     if (debug != NULL)
         debugMode = true;
