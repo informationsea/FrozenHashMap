@@ -12,7 +12,8 @@ void before(void) {
         {"FROZENHASH_DEBUG=1",
          "TMPDIR=./tmp"};
 
-    for (size_t i = 0; i < sizeof(env)/sizeof(env[0]); i++) {
+    size_t i;
+    for (i = 0; i < sizeof(env)/sizeof(env[0]); i++) {
         char *buf = (char *)malloc(strlen(env[i]+1));
         strcpy(buf, env[i]);
         putenv(buf);
