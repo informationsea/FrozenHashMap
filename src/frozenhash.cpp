@@ -91,9 +91,9 @@ const char *FrozenMap::get(const char *key, size_t keysp, size_t *valuesp)
         if (datakey == NULL)
             return NULL;
         
-        // MurmurHash3_x64_128(datakey, datakey_length, HASH_RANDOM_SEED, hash);
-        // if (hashvalue != (hash[0] % header->hashsize))
-        //    return NULL;
+        MurmurHash3_x64_128(datakey, datakey_length, HASH_RANDOM_SEED, hash);
+        if (hashvalue != (hash[0] % header->hashsize))
+            return NULL;
 
         size_t datavalue_length;
         const char *datavalue = valuetable->readNext(&datavalue_length);
