@@ -51,6 +51,25 @@ namespace frozenhashbuilder {
         data = reader.readNext(&length);
         cut_assert_equal_memory("123456789", 9, data, length);
         cut_assert_equal_char('\0', *(data+length));
+
+        uint32_t len32;
+        off_t pos = 0;
+        off_t next = 0;
+        data = reader.readAt(pos, &len32, &next);
+        cut_assert_equal_memory("OK", 2, data, len32);
+        cut_assert_equal_char('\0', *(data+len32));
+        cut_assert_equal_int(8, next);
+
+        pos = next;
+        data = reader.readAt(pos, &len32, &next);
+        cut_assert_equal_memory("12345678", 8, data, len32);
+        cut_assert_equal_char('\0', *(data+len32));
+        cut_assert_equal_int(4*(4+2), next);
+
+        pos = next;
+        data = reader.readAt(pos, &len32, &next);
+        cut_assert_equal_memory("123456789", 9, data, len32);
+        cut_assert_equal_char('\0', *(data+len32));
         
         unlink("./tmp/valuetable.dat");
     }

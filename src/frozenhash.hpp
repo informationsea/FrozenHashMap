@@ -19,9 +19,9 @@ public:
     bool open(const char *filename, off_t offset = 0);
     bool open(int fd, off_t offset = 0);
     
-    const char *get(const char *key, size_t keysp, size_t *valuesp);
-    std::string get(const std::string &key);
-    uint64_t count();
+    const char *get(const char *key, size_t keysp, size_t *valuesp) const;
+    std::string get(const std::string &key) const;
+    uint64_t count() const;
     
 private:
     int m_fd;

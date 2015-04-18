@@ -6,12 +6,6 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#define VALUE_TABLE_ALIGNMENT_BYTES 4
-
-static inline size_t calculate_aligned_length(size_t length)
-{
-    return (length/VALUE_TABLE_ALIGNMENT_BYTES + 1)*VALUE_TABLE_ALIGNMENT_BYTES;
-}
 
 ValueTableWriter::ValueTableWriter(FILE *file): m_file(file)
 {

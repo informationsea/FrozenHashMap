@@ -73,7 +73,7 @@ bool FrozenMap::open(int fd, off_t offset)
     return true;
 }
 
-const char *FrozenMap::get(const char *key, size_t keysp, size_t *valuesp)
+const char *FrozenMap::get(const char *key, size_t keysp, size_t *valuesp) const
 {
     uint64_t hash[2];
     MurmurHash3_x64_128(key, keysp, HASH_RANDOM_SEED, hash);
@@ -83,20 +83,23 @@ const char *FrozenMap::get(const char *key, size_t keysp, size_t *valuesp)
     if (valueoffset == UINT64_MAX)
         return NULL;
     
-    valuetable->seek(valueoffset);
+    off_t nextoffset;
 
     do {
-        size_t datakey_length;
-        const char *datakey = valuetable->readNext(&datakey_length);
+        uint32_t datakey_length;
+        const char *datakey = valuetable->readAt(valueoffset, &datakey_length, &nextoffset);
         if (datakey == NULL)
             return NULL;
-        
+
+        /*
         MurmurHash3_x64_128(datakey, datakey_length, HASH_RANDOM_SEED, hash);
         if (hashvalue != (hash[0] % header->hashsize))
             return NULL;
+        */
 
-        size_t datavalue_length;
-        const char *datavalue = valuetable->readNext(&datavalue_length);
+        valueoffset = nextoffset;
+        uint32_t datavalue_length;
+        const char *datavalue = valuetable->readAt(valueoffset, &datavalue_length, &nextoffset);
         if (datavalue == NULL)
             return NULL;
 
@@ -104,11 +107,12 @@ const char *FrozenMap::get(const char *key, size_t keysp, size_t *valuesp)
             *valuesp = datavalue_length;
             return datavalue;
         }
+        valueoffset = nextoffset;
     } while (1);
     return NULL;
 }
 
-std::string FrozenMap::get(const std::string &key)
+std::string FrozenMap::get(const std::string &key) const
 {
     size_t valuesize;
     const char *value = get(key.c_str(), key.length(), &valuesize);
@@ -117,7 +121,7 @@ std::string FrozenMap::get(const std::string &key)
     return std::string(value, valuesize);
 }
 
-uint64_t FrozenMap::count()
+uint64_t FrozenMap::count() const
 {
     return header->count;
 }

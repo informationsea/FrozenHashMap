@@ -4,6 +4,15 @@
 #include <stdio.h>
 #include <string>
 
+namespace {
+#define VALUE_TABLE_ALIGNMENT_BYTES 4
+
+    static inline size_t calculate_aligned_length(size_t length)
+    {
+        return (length/VALUE_TABLE_ALIGNMENT_BYTES + 1)*VALUE_TABLE_ALIGNMENT_BYTES;
+    }
+}
+
 class ValueTableWriter {
 public:
     ValueTableWriter(FILE *file);
@@ -25,6 +34,12 @@ public:
     virtual ~ValueTableReader();
     
     const char* readNext(size_t *length);
+
+    inline const char* readAt(off_t pos, uint32_t *length, off_t *next) const {
+        *length = *((uint32_t *)(datamap+pos));
+        *next = pos + calculate_aligned_length(*length) + sizeof(uint32_t);
+        return datamap+pos+sizeof(uint32_t);
+    }
 
     bool isReady() { return ready; }
     long tell();

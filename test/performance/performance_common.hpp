@@ -43,7 +43,7 @@ public:
         suseconds_t microdiff = _end.tv_usec - _start.tv_usec;
         uint64_t diff = ((uint64_t)secdiff)*1000*1000 + microdiff;
         double sec = diff/(1000.*1000);
-        fprintf(stdout, "%s %lf\n", message.c_str(), sec);
+        fprintf(stdout, "%s\t%lf\n", message.c_str(), sec);
     }
 };
 

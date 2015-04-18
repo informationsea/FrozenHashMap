@@ -30,16 +30,25 @@ int kyotocabinet_common(const char *filename) {
     
     if (!db2.open(filename)) {fprintf(stderr, "Cannot reopen kyotocabinet database\n");return 1;}
 
+    if (db2.count() != keylist.size()) {
+        fprintf(stderr, "Wrong number of entries\n");
+        return 1;
+    }
+
     fprintf(stderr, "Looking up DB for %s\n", filename);
     size_t indexesLength = db2.count()*LOOKUP_KEY_SIZE_FACTOR;
     uint64_t *indexes = prepareRandomIndex(indexesLength, db2.count());
 
-    snprintf(buf, sizeof(buf)-1, "Kyoto Cabinet\t%s", filename);
+    snprintf(buf, sizeof(buf)-1, "Kyoto Cabinet %s", filename);
     PerformanceTest pt(buf);
     pt.start();
     for (uint64_t i = 0; i < indexesLength; i++) {
         size_t valueSize;
-        const char* value = db.get(keylist[indexes[i]], strlen(keylist[indexes[i]]), &valueSize);
+        const char* value = db2.get(keylist[indexes[i]], strlen(keylist[indexes[i]]), &valueSize);
+        if (value == NULL) {
+            fprintf(stderr, "Cannot get data for %s\n", keylist[indexes[i]]);
+            return 1;
+        }
         delete value;
     }
     pt.end();

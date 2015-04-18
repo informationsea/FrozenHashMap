@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <limits.h>
 
-#define HASH_SIZE_FACTOR 1.3
+#define HASH_SIZE_FACTOR 2
 #define HASH_RANDOM_SEED 1961288601U
 #define HASH_VALYE_BYTES 8
 
