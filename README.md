@@ -13,8 +13,23 @@ License
 
 * GNU GPL version 3 or later
 
+Requirements
+------------
+
+* [Kyoto Cabinet](http://fallabs.com/kyotocabinet/) is required to build.
+
 Author
 ------
 
 * Yasunobu OKAMURA
+
+A following library is included in `src`.
+
+* [MurmurHash3](https://code.google.com/p/smhasher/wiki/MurmurHash3) was written by Austin Appleby
+
+Following libraries are included in `test/performance` to do
+performance test. Thanks a lot to authors!
+
+* [CDB++](http://www.chokkan.org/software/cdbpp/)
+* [SFMT 1.4.1](http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/SFMT/index-jp.html)
 

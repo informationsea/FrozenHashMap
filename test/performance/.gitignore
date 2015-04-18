@@ -1,0 +1,9 @@
+gene_info_summary.txt
+gene_info_summary_head.txt
+*~
+/testdata/
+
+kyotocabinet_kch
+kyotocabinet_kct
+cdbpp
+frozenhashmap

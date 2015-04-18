@@ -34,6 +34,11 @@ PKG_CHECK_MODULES(kyotocabinet, kyotocabinet >= 1.2.76)
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h stdbool.h string.h unistd.h])
 
+# Check for performance test
+AC_LANG_PUSH([C++])
+AC_CHECK_HEADERS([leveldb/db.h])
+AC_LANG_POP([C++])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_TYPE_INT8_T
@@ -48,5 +53,5 @@ AC_FUNC_ERROR_AT_LINE
 AC_FUNC_MMAP
 AC_CHECK_FUNCS([memset strtoul])
 
-AC_CONFIG_FILES([src/Makefile Makefile test/Makefile frozenhashmap.pc])
+AC_CONFIG_FILES([src/Makefile Makefile test/Makefile test/performance/Makefile frozenhashmap.pc])
 AC_OUTPUT

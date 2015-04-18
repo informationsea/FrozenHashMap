@@ -1,7 +1,9 @@
+EXTRA_DIST = run-test.sh geneid-symbol.txt
+SUBDIRS = performance
+
 if WITH_CUTTER
 TESTS = run-test.sh
 TESTS_ENVIRONMENT = CUTTER="$(CUTTER)"
-EXTRA_DIST = run-test.sh geneid-symbol.txt
 
 AM_LDFLAGS = -module -rpath $(libdir) -avoid-version -no-undefined
 AM_CPPFLAGS = $(kyotocabinet_CFLAGS) $(CPPCUTTER_CFLAGS) -O0 -g
