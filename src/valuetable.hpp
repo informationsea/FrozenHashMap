@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <stdint.h>
 
 namespace {
 #define VALUE_TABLE_ALIGNMENT_BYTES 4
