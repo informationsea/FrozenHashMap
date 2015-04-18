@@ -15,6 +15,8 @@
 #include "valuetable.hpp"
 #include "MurmurHash3.h"
 
+using namespace kyotocabinet;
+
 #define PAGE_ALIGNMENT (1024*4)
 #define DEBUG(fmt,...) (debugMode && fprintf(stderr, __FILE__ ": %3d: " fmt "\n" ,__LINE__, ## __VA_ARGS__))
 static bool debugMode = false;
@@ -72,12 +74,12 @@ bool FrozenMapBuilder::open()
     if (inmemory)
         snprintf(hash2key_path, sizeof(hash2key_path)-1, "-");
     else
-        snprintf(hash2key_path, sizeof(hash2key_path)-1, "%s/%s", tempdir, "hash2key.kct");
+        snprintf(hash2key_path, sizeof(hash2key_path)-1, "%s/%s", tempdir, "hash2key.kch");
     
     if (inmemory)
         snprintf(data_path, sizeof(data_path)-1, "-");
     else
-        snprintf(data_path, sizeof(data_path)-1, "%s/%s", tempdir, "data.kct");
+        snprintf(data_path, sizeof(data_path)-1, "%s/%s", tempdir, "data.kch");
 
     bool ok1 = hash2key.open(hash2key_path);
     bool ok2 = data.open(data_path);

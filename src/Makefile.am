@@ -1,6 +1,10 @@
 AM_LDFLAGS = -no-undefined
 AM_CPPFLAGS = $(kyotocabinet_CFLAGS)
 
+bin_PROGRAMS = frozenhashmgr
+frozenhashmgr_SOURCES = manager.cpp
+frozenhashmgr_LDADD = libfrozenhashmap.la
+
 lib_LTLIBRARIES = libfrozenhashmap.la
 libfrozenhashmap_la_SOURCES = MurmurHash3.cpp frozenhash.cpp valuetable.cpp frozenhashbuilder.cpp cfhm.cpp
 

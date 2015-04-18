@@ -11,8 +11,6 @@
 #include <kcpolydb.h>
 #pragma clang diagnostic pop
 
-using namespace kyotocabinet;
-
 class FrozenMapBuilder {
 public:
     FrozenMapBuilder(bool ainmemory = false);
@@ -27,8 +25,8 @@ public:
     bool build(const char *filename);
 private:
     bool inmemory;
-    PolyDB hash2key;
-    PolyDB data;
+    kyotocabinet::PolyDB hash2key;
+    kyotocabinet::PolyDB data;
     char tempdir[PATH_MAX];
     bool ready;
 
