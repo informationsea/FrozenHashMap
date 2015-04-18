@@ -45,14 +45,3 @@ int kyotocabinet_common(const char *filename) {
     pt.end();
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
