@@ -1,5 +1,5 @@
 EXTRA_DIST = gene_info_summary_head.txt.xz
-AM_CPPFLAGS = -DSFMT_MEXP=86243
+AM_CPPFLAGS = -DSFMT_MEXP=86243 $(kyotocabinet_CFLAGS)
 
 noinst_PROGRAMS = kyotocabinet_kch kyotocabinet_kct cdbpp frozenhashmap
 noinst_DATA =  gene_info_summary_head.txt

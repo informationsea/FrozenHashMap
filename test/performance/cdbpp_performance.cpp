@@ -2,6 +2,7 @@
 #include "cdbpp.h"
 #include <iostream>
 #include <vector>
+#include <stdlib.h>
 
 #define DBNAME "cdbpp.cdb"
 #define DBPATH (DBDIR "/" DBNAME)

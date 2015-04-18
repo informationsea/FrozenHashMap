@@ -1,5 +1,8 @@
 #include "performance_common.hpp"
 
+#include <string.h>
+#include <stdlib.h>
+
 TSVPairLoader::TSVPairLoader(const char *filename) : ready(false) {
     file = fopen(filename, "r");
     if (file)
