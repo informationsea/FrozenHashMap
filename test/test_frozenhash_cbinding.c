@@ -7,21 +7,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-void before(void) {
-    const char *env[] =
-        {"FROZENHASH_DEBUG=1",
-         "TMPDIR=./tmp"};
-
-    size_t i;
-    for (i = 0; i < sizeof(env)/sizeof(env[0]); i++) {
-        char *buf = (char *)malloc(strlen(env[i]+1));
-        strcpy(buf, env[i]);
-        putenv(buf);
-    }
-    cut_assert(system("mkdir -p ./tmp") == 0);
-}
-
 void test_frozenhash_builder(void){
+    cut_assert(system("mkdir -p ./tmp") == 0);
 
     struct CFrozenHashMapBuilder *builder = CFrozenHashMapBuilderAllocate(false);
     cut_assert(builder);
