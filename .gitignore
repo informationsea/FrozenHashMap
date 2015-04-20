@@ -54,3 +54,5 @@ frozenhashmap-*.tar.*
 /src/frozenhash
 
 log.txt
+
+tmp/

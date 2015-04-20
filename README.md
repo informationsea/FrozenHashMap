@@ -6,7 +6,7 @@ Fast Immutable Hash Map
 Warning
 -------
 
-API and database format is not stable.
+API and database format is not stable. Feedback is welcome.
 
 License
 -------
@@ -16,7 +16,20 @@ License
 Requirements
 ------------
 
-* [Kyoto Cabinet](http://fallabs.com/kyotocabinet/) is required to build.
+* [Kyoto Cabinet](http://fallabs.com/kyotocabinet/) is required to
+  build.
+
+How to build?
+-------------
+
+### From Git Repository
+
+    $ git clone https://github.com/informationsea/FrozenHashMap.git
+    $ cd FrozenHashMap
+    $ ./autogen.sh
+    $ ./configure
+    $ make
+    $ sudo make install
 
 Author
 ------
