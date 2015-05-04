@@ -33,16 +33,29 @@ namespace mutablehash_test {
         data = mutable_hash.get("Three", 5, &size);
         cut_assert_null(data);
 
-        cut_assert_equal_int(true, mutable_hash.append("World", 5, "?!?!", 4));
+        cut_assert_true(mutable_hash.append("World", 5, "?!?!", 4));
         data = mutable_hash.get("World", 5, &size);
         cut_assert_not_null(data);
         cut_assert_equal_memory("!?!?!", 5, data, size);
         free(data);
 
-        cut_assert_equal_int(true, mutable_hash.set("World", 5, "#@#@", 4));
+        cut_assert_true(mutable_hash.set("World", 5, "#@#@", 4));
         data = mutable_hash.get("World", 5, &size);
         cut_assert_not_null(data);
         cut_assert_equal_memory("#@#@", 4, data, size);
+        free(data);
+
+        cut_assert_equal_int(2, mutable_hash.count());
+
+        // ----
+        
+        cut_assert_equal_int(true, mutable_hash.append("Fiji", 4, "Island", 6));
+        
+        cut_assert_equal_int(3, mutable_hash.count());
+
+        data = mutable_hash.get("Fiji", 4, &size);
+        cut_assert_not_null(data);
+        cut_assert_equal_memory("Island", 6, data, size);
         free(data);
 
     }

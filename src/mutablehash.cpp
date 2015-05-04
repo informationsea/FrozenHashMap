@@ -146,6 +146,9 @@ namespace frozenhashmap {
         if (keydata_stack != keydata) {
             free(keydata);
         }
+
+        m_count += 1;
+        
         return true;
     }
     
