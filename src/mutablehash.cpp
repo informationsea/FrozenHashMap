@@ -44,6 +44,14 @@ namespace frozenhashmap {
     
     MutableHash::~MutableHash()
     {
+        delete m_valuetable;
+        if (unlink(m_valuetable_path))
+            perror("Cannot delete valuetable");
+        delete m_keytable;
+        if (unlink(m_keytable_path))
+            perror("Cannot delete keytable");
+        if (rmdir(m_dir_path))
+            perror("Cannot delete directory");
         free(m_hashTable);
     }
 
