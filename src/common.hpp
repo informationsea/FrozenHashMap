@@ -7,7 +7,7 @@
 
 #define HASH_SIZE_FACTOR 2
 #define HASH_RANDOM_SEED 1961288601U
-#define HASH_VALYE_BYTES 8
+#define HASH_VALUE_BYTES 8
 
 #define _CONCAT(x, y) x ## y
 #define CONCAT(x, y) _CONCAT(x, y)

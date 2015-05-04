@@ -145,7 +145,7 @@ bool FrozenMapBuilder::build(int fd)
     snprintf(hashtable_path, sizeof(hashtable_path)-1, "%s/%s", tempdir, "hashtable.dat");
     int hashtable_fd = ::open(hashtable_path, O_CREAT|O_RDWR|O_TRUNC, S_IRUSR|S_IWUSR);
     if (hashtable_fd < 0) {perror("Cannot open hash table"); return false;}
-    size_t hashtable_size = hashsize*(HASH_VALYE_BYTES);
+    size_t hashtable_size = hashsize*(HASH_VALUE_BYTES);
     {
         char zero[1024*10];
         memset(zero, 0xff, sizeof(zero));
