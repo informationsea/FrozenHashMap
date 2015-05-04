@@ -36,4 +36,8 @@ struct FrozenHashMapHeader {
 #define UINT64_MAX 0xFFffFFffFFffFFff
 #endif
 
+#ifndef UINT32_MAX
+#define UINT32_MAX 0xFFffFFff
+#endif
+
 #endif /* COMMON_H */

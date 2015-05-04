@@ -2,6 +2,7 @@
 
 #include "mutablevaluetable.hpp"
 #include "MurmurHash3.h"
+#include "common.hpp"
 
 #include <stdlib.h>
 #include <unistd.h>
