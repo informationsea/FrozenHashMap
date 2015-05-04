@@ -39,5 +39,11 @@ namespace mutablehash_test {
         cut_assert_equal_memory("!?!?!", 5, data, size);
         free(data);
 
+        cut_assert_equal_int(true, mutable_hash.set("World", 5, "#@#@", 4));
+        data = mutable_hash.get("World", 5, &size);
+        cut_assert_not_null(data);
+        cut_assert_equal_memory("#@#@", 4, data, size);
+        free(data);
+
     }
 }

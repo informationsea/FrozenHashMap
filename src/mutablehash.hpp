@@ -2,6 +2,7 @@
 #define MUTABLEHASH_H
 
 #include <vector>
+#include <limits.h>
 #include <stdint.h>
 
 namespace frozenhashmap {

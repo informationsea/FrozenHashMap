@@ -127,9 +127,9 @@ namespace frozenhashmap {
 
         
         fprintf(stderr,
-                "position: %llx\n"
+                "position: 0x%llx\n"
                 "ok: %u\n"
-                "next position: %llu\n"
+                "next position: 0x%llx\n"
                 "flags: %02x\n"
                 "chunk length: %u\n"
                 "data length: %u\n"
@@ -258,7 +258,7 @@ namespace frozenhashmap {
              bufferSize -= readBytes;
              current += readBytes;
              chunk = chunk.nextChunk();
-        } while(!chunk.isInvalid());
+        } while(!chunk.isInvalid() && chunk.m_header.dataLength > 0);
 
         *length = firstChunk.totalLength();
         return data;

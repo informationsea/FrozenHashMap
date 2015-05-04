@@ -134,5 +134,46 @@ namespace mutablevaluetable_test {
             free(data);
         }
     }
+
+    void test_mutable_value_table4 () {
+        cut_assert_equal_int(0, system("mkdir -p tmp"));
+        cut_assert_equal_int(0, system("rm tmp/mutable_value_table4.dat;true"));
+        MutableValueTable value("tmp/mutable_value_table4.dat");
+        cut_assert_equal_int(0, value.error());
+        uint64_t positions[] = {
+            value.addEntry("HI", 2),
+            value.addEntry("HELLO", 5),
+            value.addEntry("This is a pen.", 14),
+        };
+
+        cut_assert_true(value.appendToEntry(positions[0], " TEST text", 10));
+
+        uint32_t length;
+        void *data = value.getEntry(positions[0], &length);
+        cut_assert_equal_int(0, value.error(), cut_message("Error: %s", value.errorMessage()));
+        cut_assert_equal_memory("HI TEST text", 12, data, length);
+
+        cut_assert_true(value.updateEntry(positions[0], "One", 3));
+
+        data = value.getEntry(positions[0], &length);
+        cut_assert_equal_int(0, value.error(), cut_message("Error: %s", value.errorMessage()));
+        cut_assert_equal_memory("One", 3, data, length);
+
+        // ----
+        
+        cut_assert_true(value.updateEntry(positions[1], "C++ Programming Language", 24));
+
+        data = value.getEntry(positions[1], &length);
+        cut_assert_equal_int(0, value.error(), cut_message("Error: %s", value.errorMessage()));
+        cut_assert_equal_memory("C++ Programming Language", 24, data, length);
+
+        cut_assert_true(value.updateEntry(positions[1], "Ruby", 4));
+
+        data = value.getEntry(positions[1], &length);
+        cut_assert_equal_int(0, value.error(), cut_message("Error: %s", value.errorMessage()));
+        cut_assert_equal_memory("Ruby", 4, data, length);
+
+    }
 }
+
 

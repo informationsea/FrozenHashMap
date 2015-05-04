@@ -162,7 +162,8 @@ namespace frozenhashmap {
         }
         if (debugMode) {
             DEBUG("Position: %llx", position);
-            m_keytable->debugPrint();
+            //m_keytable->debugPrint();
+            m_valuetable->debugPrint();
         }
         
         uint32_t length;
@@ -191,14 +192,20 @@ namespace frozenhashmap {
         DEBUG("Not Found");
     cleanup:
         free(start);
-        DEBUG("valuePosition: %p", value);
+        DEBUG("valuePosition: 0x%llx", returnValue);
         return returnValue;
     }
 
     void *MutableHash::get(const void *key, uint32_t keylen, uint32_t *datalen)
     {
         uint64_t valpos = valuePosition(key, keylen);
-        return m_valuetable->getEntry(valpos, datalen);
+        if (valpos == UINT64_MAX)
+            return NULL;
+        void* data = m_valuetable->getEntry(valpos, datalen);
+        if (data == NULL) {
+            fprintf(stderr, "Error: %s %d\n", m_valuetable->errorMessage(), m_valuetable->error());
+        }
+        return data;
     }
 
     uint64_t MutableHash::hashvalue4key(const void *key, uint32_t length)
