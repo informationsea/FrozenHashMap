@@ -1,5 +1,7 @@
 #include <cppcutter.h>
 #include <stdlib.h>
+#include <map>
+#include <string>
 
 #include "mutablehash.hpp"
 
@@ -59,4 +61,66 @@ namespace mutablehash_test {
         free(data);
 
     }
+
+    void test_cursor() {
+        MutableHash mutable_hash;
+        cut_assert_equal_int(true, mutable_hash.open());
+        cut_assert_equal_int(true, mutable_hash.set("Hello", 5, "OK", 2));
+        cut_assert_equal_int(true, mutable_hash.set("World", 5, "!", 1));
+        cut_assert_equal_int(true, mutable_hash.set("foo", 3, "hoge", 4));
+        cut_assert_equal_int(true, mutable_hash.set("hoge", 4, "foo", 3));
+
+        fprintf(stderr, "Initialized hashmap\n");
+        
+        std::map<std::string, std::string> found;
+        MutableHashCursor cursor(&mutable_hash);
+        fprintf(stderr, "Initialized cursor\n");
+        while(cursor.next()) {
+            fprintf(stderr, "Next\n");
+            char *key, *data;
+            size_t keylen, datalen;
+            cut_assert_true(cursor.get(&key, &keylen, &data, &datalen));
+            cut_assert_equal_int(0, found.count(key));
+            found[key] = data;
+        }
+
+        cut_assert_equal_int(4, found.size());
+        
+        cut_assert_equal_int(1, found.count("Hello"));
+        cut_assert_equal_int(1, found.count("World"));
+        cut_assert_equal_int(1, found.count("foo"));
+        cut_assert_equal_int(1, found.count("hoge"));
+        
+        cut_assert_equal_string("OK", found["Hello"].c_str());
+        cut_assert_equal_string("!", found["World"].c_str());
+        cut_assert_equal_string("foo", found["hoge"].c_str());
+        cut_assert_equal_string("hoge", found["foo"].c_str());
+    }
+
+    void test_cursor_key() {
+        MutableHash mutable_hash;
+        cut_assert_equal_int(true, mutable_hash.open());
+        cut_assert_equal_int(true, mutable_hash.set("Hello", 5, "OK", 2));
+        cut_assert_equal_int(true, mutable_hash.set("World", 5, "!", 1));
+        cut_assert_equal_int(true, mutable_hash.set("foo", 3, "hoge", 4));
+        cut_assert_equal_int(true, mutable_hash.set("hoge", 4, "foo", 3));
+
+        //fprintf(stderr, "Initialized hashmap\n");
+        
+        std::map<std::string, std::string> found;
+        MutableHashCursor cursor(&mutable_hash);
+        //fprintf(stderr, "Initialized cursor\n");
+        while(cursor.next()) {
+            size_t keylen;
+            char *key = cursor.getKey(&keylen);
+            cut_assert_equal_int(strlen(key), keylen);
+            cut_assert_equal_int(0, found.count(key));
+            found[key] = "found";
+        }
+
+        cut_assert_equal_int(4, found.size());
+    }
+
 }
+
+

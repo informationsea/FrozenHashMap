@@ -8,13 +8,6 @@
 #include <unistd.h>
 #include <string.h>
 
-namespace {
-    struct KeyChunkHeader {
-        uint64_t valuepos;
-        uint32_t keylen;
-    };
-}
-
 namespace frozenhashmap {
 
 #define DEBUG(fmt,...) (debugMode && fprintf(stderr, __FILE__ ": %3d: " fmt "\n" ,__LINE__, ## __VA_ARGS__))
@@ -45,14 +38,16 @@ namespace frozenhashmap {
     
     MutableHash::~MutableHash()
     {
-        delete m_valuetable;
-        if (unlink(m_valuetable_path))
-            perror("Cannot delete valuetable");
-        delete m_keytable;
-        if (unlink(m_keytable_path))
-            perror("Cannot delete keytable");
-        if (rmdir(m_dir_path))
-            perror("Cannot delete directory");
+        if (!debugMode) {
+            delete m_valuetable;
+            if (unlink(m_valuetable_path))
+                perror("Cannot delete valuetable");
+            delete m_keytable;
+            if (unlink(m_keytable_path))
+                perror("Cannot delete keytable");
+            if (rmdir(m_dir_path))
+                perror("Cannot delete directory");
+        }
         free(m_hashTable);
     }
 
@@ -226,5 +221,85 @@ namespace frozenhashmap {
         uint64_t hashout[2];
         MurmurHash3_x64_128(key, length, SEED_VALUE, hashout);
         return hashout[0] & m_hashMask;
+    }
+
+    MutableHashCursor::MutableHashCursor(MutableHash *mutable_hash) :
+        m_hash(mutable_hash),
+        m_next_keytable_position(0), m_keydata(NULL), m_current_keydata_size(0), m_current_keydata_position(0)
+    {
+        m_ok = true;
+        bzero(&m_current_keyheader, sizeof(m_current_keyheader));
+    }
+    
+    MutableHashCursor::~MutableHashCursor()
+    {
+
+    }
+
+    bool MutableHashCursor::get(char **key, size_t *keylen, char **value, size_t *valuelen)
+    {
+        if (!m_ok)
+            goto onerror;
+        
+        *key = getKey(keylen);
+        if (*key == NULL) {
+            goto onerror;
+        }
+        
+        *value = getValue(valuelen);
+        if (*value == NULL) {
+            free(key);
+            goto onerror;
+        }
+
+        return true;
+    onerror:
+        *key = NULL;
+        *value = NULL;
+        *keylen = 0;
+        *valuelen = 0;
+        return false;
+    }
+
+    char *MutableHashCursor::getKey(size_t *keylen)
+    {
+        *keylen = m_current_keyheader.keylen;
+        char *data = (char *)malloc(m_current_keyheader.keylen+1);
+        bzero(data, m_current_keyheader.keylen+1);
+        DEBUG("getKey FROM %u", m_current_keydata_position + sizeof(m_current_keyheader));
+        memcpy(data, m_keydata + m_current_keydata_position + sizeof(m_current_keyheader), m_current_keyheader.keylen);
+        return data;
+    }
+    
+    char *MutableHashCursor::getValue(size_t *keylen)
+    {
+        uint32_t len;
+        void *data = m_hash->m_valuetable->getEntry(m_current_keyheader.valuepos, &len);
+        *keylen = len;
+        return (char *)data;
+    }
+
+    
+    bool MutableHashCursor::next()
+    {
+        DEBUG("Next %u %u", m_current_keydata_size, m_current_keydata_position);
+        if (m_current_keydata_size > 0)
+            m_current_keydata_position += m_current_keyheader.keylen + sizeof(m_current_keyheader);
+        DEBUG("Position updated %u", m_current_keydata_position);
+
+        if (m_current_keydata_size <= m_current_keydata_position || m_current_keydata_size == 0) {
+            DEBUG("Next Entry");
+            m_keydata = (uint8_t *)m_hash->m_keytable->getEntry(m_next_keytable_position, &m_current_keydata_size);
+            m_next_keytable_position = m_hash->m_keytable->nextEntry(m_next_keytable_position);
+            m_current_keydata_position = 0;
+            if (m_keydata == NULL)
+                return false;
+        }
+
+        memcpy(&m_current_keyheader, m_keydata + m_current_keydata_position, sizeof(m_current_keyheader));
+
+        DEBUG("keylen: %u", m_current_keyheader.keylen);
+
+        return true;
     }
 }

@@ -5,14 +5,23 @@
 #include <limits.h>
 #include <stdint.h>
 
+namespace {
+    struct KeyChunkHeader {
+        uint64_t valuepos;
+        uint32_t keylen;
+    };
+}
+
 namespace frozenhashmap {
     class MutableValueTable;
+    class MutableHashCursor;
 
     /**
      * Mutable Hash Map
      * @warning This class is not thread safe and re-entrant
      */
     class MutableHash {
+        friend class MutableHashCursor;
     public:
         MutableHash(uint64_t expectedCount = 1024*1024*5);
         virtual ~MutableHash();
@@ -54,6 +63,26 @@ namespace frozenhashmap {
         bool add(const void *key, uint32_t keylen, uint64_t hashvalue, const void *data, uint32_t datalen);
     };
 
+    class MutableHashCursor {
+    public:
+        MutableHashCursor(MutableHash *mutable_hash);
+        virtual ~MutableHashCursor();
+
+        bool get(char **key, size_t *keylen, char **value, size_t *valuelen);
+        char *getKey(size_t *keylen);
+        char *getValue(size_t *keylen);
+        bool next();
+        
+    private:
+        bool m_ok;
+        MutableHash *m_hash;
+        uint64_t m_next_keytable_position;
+        uint8_t *m_keydata;
+        uint32_t m_current_keydata_size;
+        uint32_t m_current_keydata_position;
+
+        struct KeyChunkHeader m_current_keyheader;
+    };
 }
 
 #endif /* MUTABLEHASH_H */
