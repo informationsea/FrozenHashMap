@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <limits.h>
+#include <stdlib.h>
 #include <stdint.h>
 
 namespace {
