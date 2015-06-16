@@ -35,7 +35,7 @@ namespace frozenhashmap {
     MutableValueTableChunk::MutableValueTableChunk(MutableValueTable *table, uint64_t position) :
         m_table(table), m_position(position), m_ok(false), m_errno(0)
     {
-        char *debug = ::getenv("FROZENHASH_DEBUG");
+        char *debug = ::getenv("MUTABLEVALUETABLE_DEBUG");
         if (debug != NULL)
             debugMode = true;
         DEBUG("Creating MutableValueTableChunk at 0x%llx", position);

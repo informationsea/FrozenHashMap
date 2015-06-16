@@ -15,7 +15,7 @@
 #include "valuetable.hpp"
 #include "MurmurHash3.h"
 
-using namespace kyotocabinet;
+using namespace frozenhashmap;
 
 #define PAGE_ALIGNMENT (1024*4)
 #define DEBUG(fmt,...) (debugMode && fprintf(stderr, __FILE__ ": %3d: " fmt "\n" ,__LINE__, ## __VA_ARGS__))
@@ -81,8 +81,8 @@ bool FrozenMapBuilder::open()
     else
         snprintf(data_path, sizeof(data_path)-1, "%s/%s", tempdir, "data.kch");
 
-    bool ok1 = hash2key.open(hash2key_path);
-    bool ok2 = data.open(data_path);
+    bool ok1 = hash2key.open();
+    bool ok2 = data.open();
     ready = ok1 && ok2;
     return ready;
 }
@@ -90,7 +90,7 @@ bool FrozenMapBuilder::open()
 bool FrozenMapBuilder::put(const std::string &key, const std::string &value)
 {
     if (!ready) return false;
-    return data.set(key, value);
+    return data.set(key.c_str(), key.length(), value.c_str(), value.length());
 }
 
 bool FrozenMapBuilder::put(const char *key, size_t keylen, const char *value, size_t valuelen)
@@ -109,15 +109,16 @@ bool FrozenMapBuilder::build(int fd)
     if (hashsize > UINT64_MAX) hashsize = UINT64_MAX;
     
     {
-        data.synchronize();
-        hash2key.begin_transaction();
-        std::auto_ptr<DB::Cursor> cur(data.cursor());
-        if (!cur->jump()) return false;
+        //data.synchronize();
+        //hash2key.begin_transaction();
+        std::auto_ptr<MutableHashCursor> cur(new MutableHashCursor(&data));
+        if (!cur->next()) return false;
         DEBUG("Hash size: %llu", hashsize);
 
         char *key;
         size_t sp;
-        while((key = cur->get_key(&sp, true))) {
+        do {
+            key = cur->getKey(&sp);
             uint64_t hashvalue[2];
             MurmurHash3_x64_128(key, sp, HASH_RANDOM_SEED, &hashvalue);
             char hashstr[30];
@@ -125,19 +126,20 @@ bool FrozenMapBuilder::build(int fd)
             DEBUG("Calculate hash for %s = %s", key, hashstr);
             uint32_t valuelen = sp;
             if (hash2key.append(hashstr, length, (const char *)(&valuelen), sizeof(valuelen)) == false) {
-                DEBUG("Cannot set value %s", hash2key.error().message());
-                delete key;
+                DEBUG("Cannot set value");
+                free(key);
                 return false;
             }
             if (hash2key.append(hashstr, length, key, sp) == false) {
-                DEBUG("Cannot set value %s", hash2key.error().message());
-                delete key;
+                DEBUG("Cannot set value");
+                free(key);
                 return false;
             }
-            delete key;
-        }
-        hash2key.end_transaction();
-        hash2key.synchronize();
+            free(key);
+        } while(cur->next());
+
+        //hash2key.end_transaction();
+        //hash2key.synchronize();
     }
     
     // preparation for build hash table and value table
@@ -173,17 +175,18 @@ bool FrozenMapBuilder::build(int fd)
     // build hash table and value table
     DEBUG("Building hash table and value table");
     {
-        std::auto_ptr<DB::Cursor> cur(hash2key.cursor());
-        if (!cur->jump()) {DEBUG("DB Error hash2key"); return false;}
+        std::auto_ptr<MutableHashCursor> cur(new MutableHashCursor(&hash2key));
+        if (!cur->next()) {DEBUG("DB Error hash2key"); return false;}
         uint64_t wrote_data_count = 0;
 
-        const char *value;
+        char *key;
+        char *value;
         size_t ksp, vsp;
         do {
-            char *key = cur->get(&ksp, &value, &vsp, true);
-            if (key == NULL) {
-                DEBUG("Finish %s", hash2key.error().message());
-                break;
+            bool success = cur->get(&key, &ksp, &value, &vsp);
+            if (!success) {
+                DEBUG("Failed to load data");
+                return false;
             }
             DEBUG("Processing for hash %s / length: %zu", key, vsp);
 
@@ -205,10 +208,10 @@ bool FrozenMapBuilder::build(int fd)
                 DEBUG("NEXT key[%u]: %s", keylen, value+valuepos);
                 valuetable.write(value+valuepos, keylen);
 
-                size_t data_valuesize;
-                char *data_value = data.get(value+valuepos, keylen, &data_valuesize);
+                uint32_t data_valuesize;
+                char *data_value = (char *)data.get(value+valuepos, keylen, &data_valuesize);
                 if (data_value == NULL) {
-                    DEBUG("Cannot get hash2key value for %s (%s)\n", value+valuepos, data.error().message());
+                    DEBUG("Cannot get hash2key value for %s\n", value+valuepos);
                     return false;
                 }
 
@@ -217,7 +220,10 @@ bool FrozenMapBuilder::build(int fd)
                 
                 valuepos += keylen;
             } while(valuepos < vsp);
-            delete key;
+            free(key);
+            
+            if (!cur->next())
+                break;
         } while (1);
         
         DEBUG("Wrote data count: %llu", wrote_data_count);

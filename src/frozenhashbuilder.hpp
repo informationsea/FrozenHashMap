@@ -5,11 +5,7 @@
 #include <string>
 #include <functional>
 #include <vector>
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#include <kcpolydb.h>
-#pragma clang diagnostic pop
+#include "mutablehash.hpp"
 
 class FrozenMapBuilder {
 public:
@@ -25,8 +21,8 @@ public:
     bool build(const char *filename);
 private:
     bool inmemory;
-    kyotocabinet::PolyDB hash2key;
-    kyotocabinet::PolyDB data;
+    frozenhashmap::MutableHash hash2key;
+    frozenhashmap::MutableHash data;
     char tempdir[PATH_MAX];
     bool ready;
 

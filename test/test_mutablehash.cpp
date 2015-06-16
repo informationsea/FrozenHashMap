@@ -70,13 +70,10 @@ namespace mutablehash_test {
         cut_assert_equal_int(true, mutable_hash.set("foo", 3, "hoge", 4));
         cut_assert_equal_int(true, mutable_hash.set("hoge", 4, "foo", 3));
 
-        fprintf(stderr, "Initialized hashmap\n");
         
         std::map<std::string, std::string> found;
         MutableHashCursor cursor(&mutable_hash);
-        fprintf(stderr, "Initialized cursor\n");
         while(cursor.next()) {
-            fprintf(stderr, "Next\n");
             char *key, *data;
             size_t keylen, datalen;
             cut_assert_true(cursor.get(&key, &keylen, &data, &datalen));
@@ -121,6 +118,48 @@ namespace mutablehash_test {
         cut_assert_equal_int(4, found.size());
     }
 
+    void test_many_data() {
+        MutableHash mutable_hash;
+        cut_assert_equal_int(true, mutable_hash.open());
+        
+        FILE *testdata = fopen("./geneid-symbol.txt", "r");
+        cut_assert(testdata);
+
+        char linebuf[256];
+        bzero(linebuf, sizeof(linebuf));
+
+        while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
+            char *p = strchr(linebuf, '|');
+            if (p == NULL) continue;
+            *p = '\0';
+            p++;
+            char *e = strchr(p, '\n');
+            *e = '\0';
+
+            cut_assert(mutable_hash.set(linebuf, strlen(linebuf), p, strlen(p)));
+            bzero(linebuf, sizeof(linebuf));
+        }
+        
+        fseek(testdata, 0, SEEK_SET);
+
+        cut_assert_equal_int(47734, mutable_hash.count());
+
+        while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
+            char *p = strchr(linebuf, '|');
+            if (p == NULL) continue;
+            *p = '\0';
+            p++;
+            char *e = strchr(p, '\n');
+            *e = '\0';
+
+            uint32_t length;
+            char *data = (char *)mutable_hash.get(linebuf, strlen(linebuf), &length);
+            cut_assert(data, cut_message("Cannot obtain value for %s (expected %s)", linebuf, p));
+            cut_assert_equal_memory(p, strlen(p), data, length);
+            bzero(linebuf, sizeof(linebuf));
+        }
+        fclose(testdata);
+    }
 }
 
 
