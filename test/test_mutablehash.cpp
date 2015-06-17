@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <map>
 #include <string>
+#include <stdio.h>
 
 #include "mutablehash.hpp"
 
