@@ -2,6 +2,7 @@
 #include <frozenhash.hpp>
 #include <frozenhashbuilder.hpp>
 #include <vector>
+#include <string.h>
 
 #define DBNAME "frozen.dat"
 #define DBPATH (DBDIR "/" DBNAME)
