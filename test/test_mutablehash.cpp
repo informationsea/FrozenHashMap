@@ -79,7 +79,7 @@ namespace mutablehash_test {
             size_t keylen, datalen;
             cut_assert_true(cursor.get(&key, &keylen, &data, &datalen));
             cut_assert_equal_int(0, found.count(key));
-            found[key] = data;
+            found[key] = std::string(data, datalen);
         }
 
         cut_assert_equal_int(4, found.size());
