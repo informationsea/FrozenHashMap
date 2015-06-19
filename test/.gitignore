@@ -1,1 +1,5 @@
 /tmp/
+test_frozenhash_builder
+test_frozenhash_cbinding
+test_mutable_value_table
+test_mutablehash
