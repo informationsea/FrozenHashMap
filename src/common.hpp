@@ -21,7 +21,7 @@
 #define UINT64UF "%llu"
 #else
 #define UINT64XF "%lx"
-#define UINT64UF "%lx"
+#define UINT64UF "%lu"
 #endif
 
 const char FROZENHASH_HEADER[16] = "FROZENHASHMAP";

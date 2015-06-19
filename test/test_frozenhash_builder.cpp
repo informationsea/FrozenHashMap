@@ -162,6 +162,9 @@ namespace {
             size_t length;
             const char *data;
             data = map.get(linebuf, strlen(linebuf), &length);
+            if (data == NULL) {
+                fprintf(stderr, "Cannot obtain value for %s (expected %s)\n", linebuf, p);
+            }
             ASSERT_TRUE(data);//, cut_message("Cannot obtain value for %s (expected %s)", linebuf, p));
             ASSERT_MEMEQ(p, strlen(p), data, length);
             bzero(linebuf, sizeof(linebuf));
