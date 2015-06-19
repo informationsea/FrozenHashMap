@@ -1,11 +1,7 @@
 language: cpp
 
-env: PKG_CONFIG_PATH=local/lib/pkgconfig LD_LIBRARY_PATH=local/lib:local/lib64
-sudo: true
-before_install:
+sudo: false
 compiler:
   - gcc
-before_install:
-  - curl --silent --location https://raw.github.com/clear-code/cutter/master/data/travis/setup.sh | sh
 script:
-  - ./autogen.sh && ./configure && make && ./test/run-test.sh
+  - ./autogen.sh && ./configure && make && make check

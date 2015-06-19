@@ -6,14 +6,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-namespace {
+namespace frozenhashmap {
     struct KeyChunkHeader {
         uint64_t valuepos;
         uint32_t keylen;
     };
-}
 
-namespace frozenhashmap {
+    
     class MutableValueTable;
     class MutableHashCursor;
 

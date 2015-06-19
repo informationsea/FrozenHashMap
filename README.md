@@ -29,6 +29,7 @@ How to build?
     $ ./autogen.sh
     $ ./configure
     $ make
+    $ make check
     $ sudo make install
 
 Author
@@ -38,7 +39,13 @@ Author
 
 A following library is included in `src`.
 
-* [MurmurHash3](https://code.google.com/p/smhasher/wiki/MurmurHash3) was written by Austin Appleby
+* [MurmurHash3](https://code.google.com/p/smhasher/wiki/MurmurHash3)
+  was written by Austin Appleby
+
+A following library is included in `test/gtest`.
+
+* [Google C++ Testing Framework](https://code.google.com/p/googletest/)
+  was written by Google
 
 Following libraries are included in `test/performance` to do
 performance test. Thanks a lot to authors!
