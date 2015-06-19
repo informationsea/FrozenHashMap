@@ -29,7 +29,8 @@ AC_PROG_MAKE_SET
 AC_PROG_RANLIB
 
 # Checks for libraries.
-PKG_CHECK_MODULES(kyotocabinet, kyotocabinet >= 1.2.76)
+PKG_CHECK_MODULES([kyotocabinet], [kyotocabinet >= 1.2.76], [ac_cv_use_kyotocabinet="yes"], [ac_cv_use_kyotocabinet="no"])
+AM_CONDITIONAL([WITH_KYOTOCABINET], [test "$ac_cv_use_kyotocabinet" = "yes"])
 
 # Checks for header files.
 AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h stdbool.h string.h unistd.h])
