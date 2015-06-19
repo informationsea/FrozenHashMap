@@ -3,5 +3,6 @@ language: cpp
 sudo: false
 compiler:
   - gcc
+  - clang
 script:
   - ./autogen.sh && ./configure && make && make check
