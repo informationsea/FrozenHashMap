@@ -1,4 +1,6 @@
-EXTRA_DIST = run-test.sh geneid-symbol.txt
+AUTOMAKE_OPTIONS = subdir-objects
+
+EXTRA_DIST = geneid-symbol.txt
 SUBDIRS = performance
 
 noinst_LTLIBRARIES = libgtest.la

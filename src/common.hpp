@@ -16,7 +16,7 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-#ifdef __apple__
+#ifdef __APPLE__
 #define UINT64XF "%llx"
 #define UINT64UF "%llu"
 #else
