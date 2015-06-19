@@ -11,6 +11,5 @@ package=@PACKAGE@
 Name: @PACKAGE_NAME@
 Description: Fast Immutable hash map
 Version: @PACKAGE_VERSION@
-Requires: kyotocabinet
 Libs: -L${libdir} -lfrozenhashmap
 Cflags: -I${includedir} @CPPFLAGS@
