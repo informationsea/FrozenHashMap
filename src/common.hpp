@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <limits.h>
+#include "config.h"
 
 #define HASH_SIZE_FACTOR 2
 #define HASH_RANDOM_SEED 1961288601U
@@ -14,6 +15,14 @@
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+#ifdef __apple__
+#define UINT64XF "%llx"
+#define UINT64UF "%llu"
+#else
+#define UINT64XF "%lx"
+#define UINT64UF "%lx"
+#endif
 
 const char FROZENHASH_HEADER[16] = "FROZENHASHMAP";
 

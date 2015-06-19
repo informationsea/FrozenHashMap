@@ -161,14 +161,14 @@ namespace frozenhashmap {
 
     uint64_t MutableHash::valuePosition(const void *key, uint32_t keylen, uint64_t hashvalue)
     {
-        DEBUG("Calling valuePostion: %s %u %llx", key, keylen, hashvalue);
+        DEBUG("Calling valuePostion: %s %u " UINT64XF, (const char *)key, keylen, hashvalue);
         uint64_t position = m_hashTable[hashvalue];
         if (position == UINT64_MAX) {
             DEBUG("Not found in hash table");
             return UINT64_MAX;
         }
         if (debugMode) {
-            DEBUG("Position: %llx", position);
+            DEBUG("Position: " UINT64XF, position);
             //m_keytable->debugPrint();
             m_valuetable->debugPrint();
         }
@@ -199,7 +199,7 @@ namespace frozenhashmap {
         DEBUG("Not Found");
     cleanup:
         free(start);
-        DEBUG("valuePosition: 0x%llx", returnValue);
+        DEBUG("valuePosition: 0x" UINT64XF, returnValue);
         return returnValue;
     }
 
@@ -266,7 +266,7 @@ namespace frozenhashmap {
         *keylen = m_current_keyheader.keylen;
         char *data = (char *)malloc(m_current_keyheader.keylen+1);
         bzero(data, m_current_keyheader.keylen+1);
-        DEBUG("getKey FROM %u", m_current_keydata_position + sizeof(m_current_keyheader));
+        DEBUG("getKey FROM %zu", m_current_keydata_position + sizeof(m_current_keyheader));
         memcpy(data, m_keydata + m_current_keydata_position + sizeof(m_current_keyheader), m_current_keyheader.keylen);
         return data;
     }

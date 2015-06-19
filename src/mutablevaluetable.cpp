@@ -38,7 +38,7 @@ namespace frozenhashmap {
         char *debug = ::getenv("MUTABLEVALUETABLE_DEBUG");
         if (debug != NULL)
             debugMode = true;
-        DEBUG("Creating MutableValueTableChunk at 0x%llx", position);
+        DEBUG("Creating MutableValueTableChunk at 0x" UINT64XF, position);
         
         if (fseeko(table->m_file, position, SEEK_SET)) goto onerror;
         if (fread(&m_header, sizeof(m_header), 1, table->m_file) != 1) goto onerror;
@@ -127,9 +127,9 @@ namespace frozenhashmap {
 
         
         fprintf(stderr,
-                "position: 0x%llx\n"
+                "position: 0x" UINT64XF "\n"
                 "ok: %u\n"
-                "next position: 0x%llx\n"
+                "next position: 0x" UINT64XF "\n"
                 "flags: %02x\n"
                 "chunk length: %u\n"
                 "data length: %u\n"
@@ -283,7 +283,7 @@ namespace frozenhashmap {
         char zero[MUTABLE_VALUETABLE_ALIGNMENT];
         bzero(zero, sizeof(zero));
 
-        DEBUG("New Chunk length: %u  data: %s", length, data);
+        DEBUG("New Chunk length: %u  data: %s", length, (const char *)data);
     
         if (fseeko(m_file, 0, SEEK_END)) goto onerror;
         off_t poso;

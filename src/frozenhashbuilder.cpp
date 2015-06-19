@@ -104,7 +104,7 @@ bool FrozenMapBuilder::build(int fd)
 {
     if (!ready) return false;
     // build hash2key
-    DEBUG("Data count: %lld", data.count());
+    DEBUG("Data count: " UINT64UF, data.count());
     uint64_t hashsize = (uint64_t)(HASH_SIZE_FACTOR*data.count()+1);
     if (hashsize > UINT64_MAX) hashsize = UINT64_MAX;
     
@@ -113,7 +113,7 @@ bool FrozenMapBuilder::build(int fd)
         //hash2key.begin_transaction();
         std::auto_ptr<MutableHashCursor> cur(new MutableHashCursor(&data));
         if (!cur->next()) return false;
-        DEBUG("Hash size: %llu", hashsize);
+        DEBUG("Hash size: " UINT64UF, hashsize);
 
         char *key;
         size_t sp;
@@ -122,7 +122,7 @@ bool FrozenMapBuilder::build(int fd)
             uint64_t hashvalue[2];
             MurmurHash3_x64_128(key, sp, HASH_RANDOM_SEED, &hashvalue);
             char hashstr[30];
-            size_t length = snprintf(hashstr, sizeof(hashstr)-1, "%llu", hashvalue[0] % hashsize);
+            size_t length = snprintf(hashstr, sizeof(hashstr)-1, UINT64UF, hashvalue[0] % hashsize);
             DEBUG("Calculate hash for %s = %s", key, hashstr);
             uint32_t valuelen = sp;
             if (hash2key.append(hashstr, length, (const char *)(&valuelen), sizeof(valuelen)) == false) {
@@ -226,7 +226,7 @@ bool FrozenMapBuilder::build(int fd)
                 break;
         } while (1);
         
-        DEBUG("Wrote data count: %llu", wrote_data_count);
+        DEBUG("Wrote data count: " UINT64UF, wrote_data_count);
     }
     
     fclose(valuetable_file);

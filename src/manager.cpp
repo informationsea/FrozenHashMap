@@ -2,6 +2,7 @@
 #include "frozenhashbuilder.hpp"
 #include <stdio.h>
 #include <string.h>
+#include "common.hpp"
 
 enum Mode {
     HELP, DUMP, BUILD, GET, INFO
@@ -63,7 +64,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Cannot open database\n");
             return 1;
         }
-        printf("Count: %llu\n", map.count());
+        printf("Count: " UINT64UF "\n", map.count());
         break;}
     case DUMP: {
         class FrozenMap map;
