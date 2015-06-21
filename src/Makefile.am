@@ -1,4 +1,5 @@
 AM_LDFLAGS = -no-undefined
+AM_CPPFLAGS = -Wall -Wextra
 
 bin_PROGRAMS = frozenhashmgr
 frozenhashmgr_SOURCES = manager.cpp

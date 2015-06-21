@@ -28,9 +28,10 @@ AC_PROG_RANLIB
 # Checks for libraries.
 PKG_CHECK_MODULES([kyotocabinet], [kyotocabinet >= 1.2.76], [ac_cv_use_kyotocabinet="yes"], [ac_cv_use_kyotocabinet="no"])
 AM_CONDITIONAL([WITH_KYOTOCABINET], [test "$ac_cv_use_kyotocabinet" = "yes"])
+AC_CHECK_LIB([pthread], [pthread_create])
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h stdbool.h string.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h inttypes.h limits.h netdb.h stddef.h stdint.h stdlib.h string.h strings.h sys/time.h sys/timeb.h unistd.h wchar.h wctype.h])
 
 # Check for performance test
 AC_LANG_PUSH([C++])
@@ -38,18 +39,28 @@ AC_CHECK_HEADERS([leveldb/db.h])
 AC_LANG_POP([C++])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
+AC_TYPE_INT32_T
 AC_TYPE_INT8_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
+AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 AC_TYPE_UINT8_T
+AC_CHECK_TYPES([ptrdiff_t])
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
+AC_FUNC_FORK
+AC_FUNC_FSEEKO
+AC_FUNC_MALLOC
 AC_FUNC_MMAP
-AC_CHECK_FUNCS([memset strtoul])
+AC_FUNC_STRERROR_R
+AC_CHECK_FUNCS([bzero dup2 fchdir getcwd getpagesize gettimeofday memset mkdir munmap putenv regcomp rmdir socket strcasecmp strchr strdup strerror strrchr strstr strtol strtoul strtoull])
 
 AC_CONFIG_FILES([src/Makefile Makefile test/Makefile test/performance/Makefile frozenhashmap.pc])
 AC_OUTPUT
