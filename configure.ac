@@ -31,7 +31,7 @@ AM_CONDITIONAL([WITH_KYOTOCABINET], [test "$ac_cv_use_kyotocabinet" = "yes"])
 AC_CHECK_LIB([pthread], [pthread_create])
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h inttypes.h limits.h netdb.h stddef.h stdint.h stdlib.h string.h strings.h sys/time.h sys/timeb.h unistd.h wchar.h wctype.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h float.h inttypes.h limits.h netdb.h stddef.h stdint.h stdlib.h string.h strings.h sys/time.h sys/timeb.h unistd.h wchar.h wctype.h stdbool.h])
 
 # Check for performance test
 AC_LANG_PUSH([C++])
@@ -39,7 +39,6 @@ AC_CHECK_HEADERS([leveldb/db.h])
 AC_LANG_POP([C++])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_INT32_T
 AC_TYPE_INT8_T
