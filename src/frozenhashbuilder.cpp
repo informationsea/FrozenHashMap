@@ -7,6 +7,7 @@
 #include <memory>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <limits.h>
 
 #include "config.h"
 #include "common.hpp"
