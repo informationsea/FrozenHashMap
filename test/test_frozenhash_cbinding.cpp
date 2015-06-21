@@ -12,7 +12,7 @@ namespace {
         ASSERT_EQ(0, system("mkdir -p ./tmp"));
 
         struct CFrozenHashMapBuilder *builder = CFrozenHashMapBuilderAllocate(false);
-        ASSERT_TRUE(builder);
+        ASSERT_TRUE(builder != NULL);
         ASSERT_TRUE(CFrozenHashMapBuilderOpen(builder));
         ASSERT_TRUE(CFrozenHashMapBuilderPutString(builder, "Hi", "OK-Hi"));
         ASSERT_TRUE(CFrozenHashMapBuilderPutString(builder, "Echo", "OK-Echo"));
@@ -21,11 +21,11 @@ namespace {
         CFrozenHashMapBuilderFree(builder);
 
         struct CFrozenHashMap *map = CFrozenHashMapAllocate();
-        ASSERT_TRUE(map);
+        ASSERT_TRUE(map != NULL);
 
         ASSERT_TRUE(CFrozenHashMapOpen(map, "./tmp/dbfile.dat"));
 
-        ASSERT_EQ(3, CFrozenHashMapCount(map));
+        ASSERT_TRUE(3 == CFrozenHashMapCount(map));
 
         size_t length;
         const char *data;

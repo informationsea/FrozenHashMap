@@ -27,7 +27,7 @@ bool build(std::vector<const char *> *keylist)
     return true;
 }
 
-int main(int argc, char *argv[])
+int main(void)
 {
     if (system("mkdir -p " DBDIR) != 0) return 1;
     std::vector<const char *> keylist;

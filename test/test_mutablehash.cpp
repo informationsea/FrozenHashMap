@@ -48,13 +48,13 @@ namespace mutablehash_test {
         ASSERT_MEMEQ("#@#@", 4, data, size);
         free(data);
 
-        ASSERT_EQ(2, mutable_hash.count());
+        ASSERT_TRUE(2 == mutable_hash.count());
 
         // ----
         
         ASSERT_TRUE(mutable_hash.append("Fiji", 4, "Island", 6));
         
-        ASSERT_EQ(3, mutable_hash.count());
+        ASSERT_TRUE(3 == mutable_hash.count());
 
         data = mutable_hash.get("Fiji", 4, &size);
         ASSERT_TRUE(data);
@@ -78,16 +78,16 @@ namespace mutablehash_test {
             char *key, *data;
             size_t keylen, datalen;
             ASSERT_TRUE(cursor.get(&key, &keylen, &data, &datalen));
-            ASSERT_EQ(0, found.count(key));
+            ASSERT_TRUE(0 == found.count(key));
             found[key] = std::string(data, datalen);
         }
 
-        ASSERT_EQ(4, found.size());
+        ASSERT_TRUE(4 == found.size());
         
-        ASSERT_EQ(1, found.count("Hello"));
-        ASSERT_EQ(1, found.count("World"));
-        ASSERT_EQ(1, found.count("foo"));
-        ASSERT_EQ(1, found.count("hoge"));
+        ASSERT_TRUE(1 == found.count("Hello"));
+        ASSERT_TRUE(1 == found.count("World"));
+        ASSERT_TRUE(1 == found.count("foo"));
+        ASSERT_TRUE(1 == found.count("hoge"));
         
         ASSERT_STREQ("OK", found["Hello"].c_str());
         ASSERT_STREQ("!", found["World"].c_str());
@@ -112,11 +112,11 @@ namespace mutablehash_test {
             size_t keylen;
             char *key = cursor.getKey(&keylen);
             ASSERT_EQ(strlen(key), keylen);
-            ASSERT_EQ(0, found.count(key));
+            ASSERT_TRUE(0 == found.count(key));
             found[key] = "found";
         }
 
-        ASSERT_EQ(4, found.size());
+        ASSERT_TRUE(4 == found.size());
     }
 
     TEST(MUTABLEHASH, MANY_DATA) {
@@ -143,7 +143,7 @@ namespace mutablehash_test {
         
         fseek(testdata, 0, SEEK_SET);
 
-        ASSERT_EQ(47734, mutable_hash.count());
+        ASSERT_TRUE(47734 == mutable_hash.count());
 
         while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
             char *p = strchr(linebuf, '|');

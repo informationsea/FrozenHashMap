@@ -22,7 +22,7 @@ namespace {
             putenv(buf);
         }
 
-        system("mkdir -p ./tmp") == 0;
+        ASSERT_EQ(0, system("mkdir -p ./tmp"));
     }
 
     TEST(FROZENHASH, VALUETABLE) {
@@ -106,7 +106,7 @@ namespace {
         data = map.get("Unknown", 7, &length);
         ASSERT_FALSE(data);
         
-        ASSERT_EQ(3, map.count());
+        ASSERT_TRUE(3 == map.count());
 
         FrozenMapCursor cursor(&map);
         std::map<std::string, std::string> tmp;
@@ -117,7 +117,7 @@ namespace {
         ASSERT_STREQ("OK-Push", tmp["Push"].c_str());
         ASSERT_STREQ("OK-Hi", tmp["Hi"].c_str());
         ASSERT_STREQ("OK-Echo", tmp["Echo"].c_str());
-        ASSERT_EQ(3, tmp.size());
+        ASSERT_TRUE(3 == tmp.size());
     }
 
     TEST(FROZENHASH, BUILDER2) {
@@ -149,7 +149,7 @@ namespace {
 
         FrozenMap map;
         ASSERT_TRUE(map.open(("./tmp/dbfile2.dat")));
-        ASSERT_EQ(47734, map.count());
+        ASSERT_TRUE(47734 == map.count());
 
         while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
             char *p = strchr(linebuf, '|');

@@ -28,6 +28,7 @@ bool TSVPairLoader::next(const char **key, const char **value) {
     char *sep = strchr(linebuf, '\t');
     *sep = 0;
     char *end = strchr(sep+1, '\n');
+    *end = 0;
     *key = linebuf;
     *value = sep+1;
     return true;

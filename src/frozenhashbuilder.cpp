@@ -191,7 +191,7 @@ bool FrozenMapBuilder::build(int fd)
             DEBUG("Processing for hash %s / length: %zu", key, vsp);
 
             long filepos = ftell(valuetable_file);
-            if (filepos > UINT64_MAX) {
+            if (filepos >= (long)INT32_MAX) {
                 DEBUG("Too large value table\n");
                 return false;
             }
