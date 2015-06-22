@@ -5,6 +5,10 @@
 #ifndef _MURMURHASH3_H_
 #define _MURMURHASH3_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 //-----------------------------------------------------------------------------
 // Platform-specific functions and macros
 
@@ -12,9 +16,9 @@
 
 #if defined(_MSC_VER) && (_MSC_VER < 1600)
 
-typedef unsigned char uint8_t;
-typedef unsigned int uint32_t;
-typedef unsigned __int64 uint64_t;
+    typedef unsigned char uint8_t;
+    typedef unsigned int uint32_t;
+    typedef unsigned __int64 uint64_t;
 
 // Other compilers
 
@@ -26,12 +30,16 @@ typedef unsigned __int64 uint64_t;
 
 //-----------------------------------------------------------------------------
 
-void MurmurHash3_x86_32  ( const void * key, int len, uint32_t seed, void * out );
+    void MurmurHash3_x86_32  ( const void * key, int len, uint32_t seed, void * out );
 
-void MurmurHash3_x86_128 ( const void * key, int len, uint32_t seed, void * out );
+    void MurmurHash3_x86_128 ( const void * key, int len, uint32_t seed, void * out );
 
-void MurmurHash3_x64_128 ( const void * key, int len, uint32_t seed, void * out );
+    void MurmurHash3_x64_128 ( const void * key, int len, uint32_t seed, void * out );
 
 //-----------------------------------------------------------------------------
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _MURMURHASH3_H_
