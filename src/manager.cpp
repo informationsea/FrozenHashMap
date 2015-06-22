@@ -4,6 +4,8 @@
 #include <string.h>
 #include "common.hpp"
 
+using namespace frozenhashmap;
+
 enum Mode {
     HELP, DUMP, BUILD, GET, INFO
 };

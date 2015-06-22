@@ -8,22 +8,22 @@ namespace mutablevaluetable_test {
     using namespace frozenhashmap;
 
     TEST(MUTABLEVALUETABLE, ALIGNMENT) {
-        ASSERT_EQ(8U, mutablevaluetable_private::mutableValueTableAlignedBytes(0));
-        ASSERT_EQ(8U, mutablevaluetable_private::mutableValueTableAlignedBytes(1));
-        ASSERT_EQ(8U, mutablevaluetable_private::mutableValueTableAlignedBytes(2));
-        ASSERT_EQ(8U, mutablevaluetable_private::mutableValueTableAlignedBytes(3));
-        ASSERT_EQ(8U, mutablevaluetable_private::mutableValueTableAlignedBytes(4));
-        ASSERT_EQ(8U, mutablevaluetable_private::mutableValueTableAlignedBytes(5));
-        ASSERT_EQ(8U, mutablevaluetable_private::mutableValueTableAlignedBytes(6));
-        ASSERT_EQ(8U, mutablevaluetable_private::mutableValueTableAlignedBytes(7));
-        ASSERT_EQ(16U, mutablevaluetable_private::mutableValueTableAlignedBytes(0+8));
-        ASSERT_EQ(16U, mutablevaluetable_private::mutableValueTableAlignedBytes(1+8));
-        ASSERT_EQ(16U, mutablevaluetable_private::mutableValueTableAlignedBytes(2+8));
-        ASSERT_EQ(16U, mutablevaluetable_private::mutableValueTableAlignedBytes(3+8));
-        ASSERT_EQ(16U, mutablevaluetable_private::mutableValueTableAlignedBytes(4+8));
-        ASSERT_EQ(16U, mutablevaluetable_private::mutableValueTableAlignedBytes(5+8));
-        ASSERT_EQ(16U, mutablevaluetable_private::mutableValueTableAlignedBytes(6+8));
-        ASSERT_EQ(16U, mutablevaluetable_private::mutableValueTableAlignedBytes(7+8));
+        ASSERT_EQ(8U, frozenhashmap_private::mutableValueTableAlignedBytes(0));
+        ASSERT_EQ(8U, frozenhashmap_private::mutableValueTableAlignedBytes(1));
+        ASSERT_EQ(8U, frozenhashmap_private::mutableValueTableAlignedBytes(2));
+        ASSERT_EQ(8U, frozenhashmap_private::mutableValueTableAlignedBytes(3));
+        ASSERT_EQ(8U, frozenhashmap_private::mutableValueTableAlignedBytes(4));
+        ASSERT_EQ(8U, frozenhashmap_private::mutableValueTableAlignedBytes(5));
+        ASSERT_EQ(8U, frozenhashmap_private::mutableValueTableAlignedBytes(6));
+        ASSERT_EQ(8U, frozenhashmap_private::mutableValueTableAlignedBytes(7));
+        ASSERT_EQ(16U, frozenhashmap_private::mutableValueTableAlignedBytes(0+8));
+        ASSERT_EQ(16U, frozenhashmap_private::mutableValueTableAlignedBytes(1+8));
+        ASSERT_EQ(16U, frozenhashmap_private::mutableValueTableAlignedBytes(2+8));
+        ASSERT_EQ(16U, frozenhashmap_private::mutableValueTableAlignedBytes(3+8));
+        ASSERT_EQ(16U, frozenhashmap_private::mutableValueTableAlignedBytes(4+8));
+        ASSERT_EQ(16U, frozenhashmap_private::mutableValueTableAlignedBytes(5+8));
+        ASSERT_EQ(16U, frozenhashmap_private::mutableValueTableAlignedBytes(6+8));
+        ASSERT_EQ(16U, frozenhashmap_private::mutableValueTableAlignedBytes(7+8));
     }
 
 

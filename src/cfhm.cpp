@@ -2,6 +2,8 @@
 #include "frozenhash.hpp"
 #include "frozenhashbuilder.hpp"
 
+using namespace frozenhashmap;
+
 struct CFrozenHashMapBuilder {
     class FrozenMapBuilder builder;
 };

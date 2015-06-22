@@ -21,12 +21,12 @@ namespace {
 
 namespace frozenhashmap {
 
-    using namespace mutablevaluetable_private;
+    using namespace frozenhashmap_private;
     static bool debugMode = false;
 
 #define MUTABLE_VALUETABLE_ALIGNMENT 8
 
-    uint32_t mutablevaluetable_private::mutableValueTableAlignedBytes(uint32_t pos)
+    uint32_t frozenhashmap_private::mutableValueTableAlignedBytes(uint32_t pos)
     {
         return (pos/MUTABLE_VALUETABLE_ALIGNMENT+1)*MUTABLE_VALUETABLE_ALIGNMENT;
     }
@@ -290,7 +290,7 @@ namespace frozenhashmap {
         if ((poso = ftello(m_file)) < 0) goto onerror;
         pos = poso;
 
-        mutablevaluetable_private::ChunkHeader header;
+        ChunkHeader header;
         bzero(&header, sizeof(header));
 
         header.flags = MUTABLE_VALUETABLE_FLAG_DATA;

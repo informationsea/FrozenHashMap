@@ -6,7 +6,7 @@
 #include <limits.h>
 
 namespace frozenhashmap {
-    namespace mutablevaluetable_private {
+    namespace frozenhashmap_private {
         uint32_t mutableValueTableAlignedBytes(uint32_t pos);
 
         const uint8_t MUTABLE_VALUETABLE_FLAG_EMPTY = 0x00;
@@ -70,7 +70,7 @@ namespace frozenhashmap {
         MutableValueTable *m_table;
         uint64_t m_position;
 
-        mutablevaluetable_private::ChunkHeader m_header;
+        frozenhashmap_private::ChunkHeader m_header;
     
         bool m_isfirst;
         bool m_ok;

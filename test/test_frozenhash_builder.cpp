@@ -11,6 +11,8 @@
 
 namespace {
 
+    using namespace frozenhashmap;
+
     void before(void) {
         const char *env[] =
             {//"FROZENHASH_DEBUG=1",

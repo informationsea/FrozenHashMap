@@ -4,6 +4,8 @@
 #include <vector>
 #include <string.h>
 
+using namespace frozenhashmap;
+
 #define DBNAME "frozen.dat"
 #define DBPATH (DBDIR "/" DBNAME)
 

@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 namespace {
+
     TEST(FROZENHASH_CBINDING, CBINDING) {
         ASSERT_EQ(0, system("mkdir -p ./tmp"));
 

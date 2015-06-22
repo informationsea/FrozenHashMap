@@ -16,285 +16,286 @@
 #include "valuetable.hpp"
 #include "MurmurHash3.h"
 
-using namespace frozenhashmap;
+namespace frozenhashmap {
 
 #define PAGE_ALIGNMENT (1024*4)
 #define DEBUG(fmt,...) (debugMode && fprintf(stderr, __FILE__ ": %3d: " fmt "\n" ,__LINE__, ## __VA_ARGS__))
-static bool debugMode = false;
+    static bool debugMode = false;
 
-FrozenMapBuilder::FrozenMapBuilder(bool ainmemory) : inmemory(ainmemory), ready(false)
-{
-    bzero(tempdir, sizeof(tempdir));
-    bzero(hash2key_path, sizeof(hash2key_path));
-    bzero(data_path, sizeof(data_path));
-    bzero(hashtable_path, sizeof(hashtable_path));
-    bzero(valuetable_path, sizeof(valuetable_path));
+    FrozenMapBuilder::FrozenMapBuilder(bool ainmemory) : inmemory(ainmemory), ready(false)
+    {
+        bzero(tempdir, sizeof(tempdir));
+        bzero(hash2key_path, sizeof(hash2key_path));
+        bzero(data_path, sizeof(data_path));
+        bzero(hashtable_path, sizeof(hashtable_path));
+        bzero(valuetable_path, sizeof(valuetable_path));
     
-    char *debug = ::getenv("FROZENHASH_DEBUG");
-    if (debug != NULL)
-        debugMode = true;
-    DEBUG("Calling Constructor");
-}
-
-FrozenMapBuilder::~FrozenMapBuilder()
-{
-    
-    if (debugMode) {
-        DEBUG("Calling Deconstructor");
-        return;
+        char *debug = ::getenv("FROZENHASH_DEBUG");
+        if (debug != NULL)
+            debugMode = true;
+        DEBUG("Calling Constructor");
     }
+
+    FrozenMapBuilder::~FrozenMapBuilder()
+    {
     
-    if (strlen(tempdir) == 0)
-        return;
-
-    if (strlen(hash2key_path) > 0)
-        unlink(hash2key_path);
-
-    if (strlen(data_path) > 0)
-        unlink(data_path);
+        if (debugMode) {
+            DEBUG("Calling Deconstructor");
+            return;
+        }
     
-    if (strlen(hashtable_path) > 0)
-        unlink(hashtable_path);
+        if (strlen(tempdir) == 0)
+            return;
+
+        if (strlen(hash2key_path) > 0)
+            unlink(hash2key_path);
+
+        if (strlen(data_path) > 0)
+            unlink(data_path);
     
-    if (strlen(valuetable_path) > 0)
-        unlink(valuetable_path);
+        if (strlen(hashtable_path) > 0)
+            unlink(hashtable_path);
+    
+        if (strlen(valuetable_path) > 0)
+            unlink(valuetable_path);
 
-    rmdir(tempdir);
-}
+        rmdir(tempdir);
+    }
 
-bool FrozenMapBuilder::open()
-{
+    bool FrozenMapBuilder::open()
+    {
 #define TEMPDIR_PATTERN "%s/frozenhash-XXXXXX"
-    const char* tmpdir_parent = ::getenv("TMPDIR");
-    if (tmpdir_parent == NULL)
-        tmpdir_parent = "/tmp";
-    snprintf(tempdir, sizeof(tempdir)-1, TEMPDIR_PATTERN, tmpdir_parent);
-    if (mkdtemp(tempdir) == NULL)
-        return false;
+        const char* tmpdir_parent = ::getenv("TMPDIR");
+        if (tmpdir_parent == NULL)
+            tmpdir_parent = "/tmp";
+        snprintf(tempdir, sizeof(tempdir)-1, TEMPDIR_PATTERN, tmpdir_parent);
+        if (mkdtemp(tempdir) == NULL)
+            return false;
 
-    if (inmemory)
-        snprintf(hash2key_path, sizeof(hash2key_path)-1, "-");
-    else
-        snprintf(hash2key_path, sizeof(hash2key_path)-1, "%s/%s", tempdir, "hash2key.kch");
+        if (inmemory)
+            snprintf(hash2key_path, sizeof(hash2key_path)-1, "-");
+        else
+            snprintf(hash2key_path, sizeof(hash2key_path)-1, "%s/%s", tempdir, "hash2key.kch");
     
-    if (inmemory)
-        snprintf(data_path, sizeof(data_path)-1, "-");
-    else
-        snprintf(data_path, sizeof(data_path)-1, "%s/%s", tempdir, "data.kch");
+        if (inmemory)
+            snprintf(data_path, sizeof(data_path)-1, "-");
+        else
+            snprintf(data_path, sizeof(data_path)-1, "%s/%s", tempdir, "data.kch");
 
-    bool ok1 = hash2key.open();
-    bool ok2 = data.open();
-    ready = ok1 && ok2;
-    return ready;
-}
-
-bool FrozenMapBuilder::put(const std::string &key, const std::string &value)
-{
-    if (!ready) return false;
-    return data.set(key.c_str(), key.length(), value.c_str(), value.length());
-}
-
-bool FrozenMapBuilder::put(const char *key, size_t keylen, const char *value, size_t valuelen)
-{
-    if (!ready) return false;
-    return data.set(key, keylen, value, valuelen);
-}
-
-
-bool FrozenMapBuilder::build(int fd)
-{
-    if (!ready) return false;
-    // build hash2key
-    DEBUG("Data count: " UINT64UF, data.count());
-    uint64_t hashsize = (uint64_t)(HASH_SIZE_FACTOR*data.count()+1);
-    if (hashsize > UINT64_MAX) hashsize = UINT64_MAX;
-    
-    {
-        //data.synchronize();
-        //hash2key.begin_transaction();
-        std::auto_ptr<MutableHashCursor> cur(new MutableHashCursor(&data));
-        if (!cur->next()) return false;
-        DEBUG("Hash size: " UINT64UF, hashsize);
-
-        char *key;
-        size_t sp;
-        do {
-            key = cur->getKey(&sp);
-            uint64_t hashvalue[2];
-            MurmurHash3_x64_128(key, sp, HASH_RANDOM_SEED, &hashvalue);
-            char hashstr[30];
-            size_t length = snprintf(hashstr, sizeof(hashstr)-1, UINT64UF, hashvalue[0] % hashsize);
-            DEBUG("Calculate hash for %s = %s", key, hashstr);
-            uint32_t valuelen = sp;
-            if (hash2key.append(hashstr, length, (const char *)(&valuelen), sizeof(valuelen)) == false) {
-                DEBUG("Cannot set value");
-                free(key);
-                return false;
-            }
-            if (hash2key.append(hashstr, length, key, sp) == false) {
-                DEBUG("Cannot set value");
-                free(key);
-                return false;
-            }
-            free(key);
-        } while(cur->next());
-
-        //hash2key.end_transaction();
-        //hash2key.synchronize();
+        bool ok1 = hash2key.open();
+        bool ok2 = data.open();
+        ready = ok1 && ok2;
+        return ready;
     }
-    
-    // preparation for build hash table and value table
-    DEBUG("Preparing to build hash table and value table");
-    snprintf(hashtable_path, sizeof(hashtable_path)-1, "%s/%s", tempdir, "hashtable.dat");
-    int hashtable_fd = ::open(hashtable_path, O_CREAT|O_RDWR|O_TRUNC, S_IRUSR|S_IWUSR);
-    if (hashtable_fd < 0) {perror("Cannot open hash table"); return false;}
-    size_t hashtable_size = hashsize*(HASH_VALUE_BYTES);
+
+    bool FrozenMapBuilder::put(const std::string &key, const std::string &value)
     {
-        char zero[1024*10];
-        memset(zero, 0xff, sizeof(zero));
-        size_t written_bytes = 0;
-        while (written_bytes < hashtable_size) {
-            ssize_t wrote = ::write(hashtable_fd, zero, MIN(hashtable_size - written_bytes, sizeof(zero)));
-            if (wrote < 0) {perror("cannot write"); return false;}
-            written_bytes += wrote;
-        }
+        if (!ready) return false;
+        return data.set(key.c_str(), key.length(), value.c_str(), value.length());
     }
-    ::close(hashtable_fd);
-    hashtable_fd = ::open(hashtable_path, O_RDWR);
-    if (hashtable_fd < 0) {perror("Cannot open hash table"); return false;}
 
-    uint64_t *hashtable_map = (uint64_t *)mmap(NULL, hashtable_size, PROT_READ|PROT_WRITE, MAP_SHARED, hashtable_fd, 0);
-    if (hashtable_map == MAP_FAILED) {perror("Cannot map"); return false;}
-
-    snprintf(valuetable_path, sizeof(valuetable_path)-1, "%s/%s", tempdir, "valuetable.dat");
-
-    FILE *valuetable_file = fopen(valuetable_path, "w");
-    if (valuetable_file == NULL) {perror("Cannot open value table"); return false;}
-    ValueTableWriter valuetable(valuetable_file);
-
-
-    // build hash table and value table
-    DEBUG("Building hash table and value table");
+    bool FrozenMapBuilder::put(const char *key, size_t keylen, const char *value, size_t valuelen)
     {
-        std::auto_ptr<MutableHashCursor> cur(new MutableHashCursor(&hash2key));
-        if (!cur->next()) {DEBUG("DB Error hash2key"); return false;}
-        uint64_t wrote_data_count = 0;
-
-        char *key;
-        char *value;
-        size_t ksp, vsp;
-        do {
-            bool success = cur->get(&key, &ksp, &value, &vsp);
-            if (!success) {
-                DEBUG("Failed to load data");
-                return false;
-            }
-            DEBUG("Processing for hash %s / length: %zu", key, vsp);
-
-            long filepos = ftell(valuetable_file);
-            if (filepos >= (long)INT32_MAX) {
-                DEBUG("Too large value table\n");
-                return false;
-            }
-
-            char *endptr;
-            uint64_t hashvalue = strtoul(key, &endptr, 10);
-            *(hashtable_map + hashvalue) = filepos;
-
-            size_t valuepos = 0;
-            do {
-                uint32_t keylen;
-                memcpy(&keylen, value+valuepos, sizeof(keylen));
-                valuepos += sizeof(keylen);
-                DEBUG("NEXT key[%u]: %s", keylen, value+valuepos);
-                valuetable.write(value+valuepos, keylen);
-
-                uint32_t data_valuesize;
-                char *data_value = (char *)data.get(value+valuepos, keylen, &data_valuesize);
-                if (data_value == NULL) {
-                    DEBUG("Cannot get hash2key value for %s\n", value+valuepos);
-                    return false;
-                }
-
-                valuetable.write(data_value, data_valuesize);
-                wrote_data_count += 1;
-                
-                valuepos += keylen;
-            } while(valuepos < vsp);
-            free(key);
-            
-            if (!cur->next())
-                break;
-        } while (1);
-        
-        DEBUG("Wrote data count: " UINT64UF, wrote_data_count);
+        if (!ready) return false;
+        return data.set(key, keylen, value, valuelen);
     }
-    
-    fclose(valuetable_file);
+
+
+    bool FrozenMapBuilder::build(int fd)
     {
-
-        valuetable_file = fopen(valuetable_path, "r");
-        if (valuetable_file == NULL) {perror("Cannot re-open valuetable"); return false;}
-        FILE *dbfile = ::fdopen(fd, "w");
-        if (dbfile == NULL) {perror("Cannot open DB file"); return false;}
-
-        // fill header
-        char headerFill[PAGE_ALIGNMENT];
-        bzero(headerFill, sizeof(headerFill));
-        fwrite(headerFill, sizeof(headerFill), 1, dbfile);
-
-        // prepare header
-        FrozenHashMapHeader header;
-        bzero(&header, sizeof(header));
-
-        memcpy(header.magic, FROZENHASH_HEADER, sizeof(header.magic));
-        header.endian_check = DB_ENDIAN_CHECK;
-        header.version = DB_FORMAT_VERSION;
-        header.count = data.count();
-        header.hashsize = hashsize;
-        header.hashtable_size = hashtable_size;
-
-        fseek(valuetable_file, 0L, SEEK_END);
-        header.valuetable_size = ftell(valuetable_file);
-        fseek(valuetable_file, 0L, SEEK_SET);
-
-        header.hashtable_offset = ftell(dbfile);
-        // write hashtable
-        fwrite(hashtable_map, hashtable_size, 1, dbfile);
-        size_t padding_length = (hashtable_size/PAGE_ALIGNMENT+1)*PAGE_ALIGNMENT - hashtable_size;
-        fwrite(headerFill, padding_length, 1, dbfile);
-
-        // write valuetable
-        header.valuetable_offset = ftell(dbfile);
+        if (!ready) return false;
+        // build hash2key
+        DEBUG("Data count: " UINT64UF, data.count());
+        uint64_t hashsize = (uint64_t)(HASH_SIZE_FACTOR*data.count()+1);
+        if (hashsize > UINT64_MAX) hashsize = UINT64_MAX;
+    
         {
-            char copybuffer[1024*10];
+            //data.synchronize();
+            //hash2key.begin_transaction();
+            std::auto_ptr<MutableHashCursor> cur(new MutableHashCursor(&data));
+            if (!cur->next()) return false;
+            DEBUG("Hash size: " UINT64UF, hashsize);
+
+            char *key;
+            size_t sp;
             do {
-                size_t readbytes = fread(copybuffer, 1, sizeof(copybuffer), valuetable_file);
-                if (readbytes > 0)
-                    fwrite(copybuffer, 1, readbytes, dbfile);
-                if (readbytes != sizeof(copybuffer)) {
-                    if (feof(valuetable_file))
-                        break;
-                    perror("Reading valuetable file");
+                key = cur->getKey(&sp);
+                uint64_t hashvalue[2];
+                MurmurHash3_x64_128(key, sp, HASH_RANDOM_SEED, &hashvalue);
+                char hashstr[30];
+                size_t length = snprintf(hashstr, sizeof(hashstr)-1, UINT64UF, hashvalue[0] % hashsize);
+                DEBUG("Calculate hash for %s = %s", key, hashstr);
+                uint32_t valuelen = sp;
+                if (hash2key.append(hashstr, length, (const char *)(&valuelen), sizeof(valuelen)) == false) {
+                    DEBUG("Cannot set value");
+                    free(key);
                     return false;
                 }
-            } while(1);
+                if (hash2key.append(hashstr, length, key, sp) == false) {
+                    DEBUG("Cannot set value");
+                    free(key);
+                    return false;
+                }
+                free(key);
+            } while(cur->next());
+
+            //hash2key.end_transaction();
+            //hash2key.synchronize();
         }
     
-        munmap(hashtable_map, hashtable_size);
+        // preparation for build hash table and value table
+        DEBUG("Preparing to build hash table and value table");
+        snprintf(hashtable_path, sizeof(hashtable_path)-1, "%s/%s", tempdir, "hashtable.dat");
+        int hashtable_fd = ::open(hashtable_path, O_CREAT|O_RDWR|O_TRUNC, S_IRUSR|S_IWUSR);
+        if (hashtable_fd < 0) {perror("Cannot open hash table"); return false;}
+        size_t hashtable_size = hashsize*(HASH_VALUE_BYTES);
+        {
+            char zero[1024*10];
+            memset(zero, 0xff, sizeof(zero));
+            size_t written_bytes = 0;
+            while (written_bytes < hashtable_size) {
+                ssize_t wrote = ::write(hashtable_fd, zero, MIN(hashtable_size - written_bytes, sizeof(zero)));
+                if (wrote < 0) {perror("cannot write"); return false;}
+                written_bytes += wrote;
+            }
+        }
+        ::close(hashtable_fd);
+        hashtable_fd = ::open(hashtable_path, O_RDWR);
+        if (hashtable_fd < 0) {perror("Cannot open hash table"); return false;}
+
+        uint64_t *hashtable_map = (uint64_t *)mmap(NULL, hashtable_size, PROT_READ|PROT_WRITE, MAP_SHARED, hashtable_fd, 0);
+        if (hashtable_map == MAP_FAILED) {perror("Cannot map"); return false;}
+
+        snprintf(valuetable_path, sizeof(valuetable_path)-1, "%s/%s", tempdir, "valuetable.dat");
+
+        FILE *valuetable_file = fopen(valuetable_path, "w");
+        if (valuetable_file == NULL) {perror("Cannot open value table"); return false;}
+        ValueTableWriter valuetable(valuetable_file);
+
+
+        // build hash table and value table
+        DEBUG("Building hash table and value table");
+        {
+            std::auto_ptr<MutableHashCursor> cur(new MutableHashCursor(&hash2key));
+            if (!cur->next()) {DEBUG("DB Error hash2key"); return false;}
+            uint64_t wrote_data_count = 0;
+
+            char *key;
+            char *value;
+            size_t ksp, vsp;
+            do {
+                bool success = cur->get(&key, &ksp, &value, &vsp);
+                if (!success) {
+                    DEBUG("Failed to load data");
+                    return false;
+                }
+                DEBUG("Processing for hash %s / length: %zu", key, vsp);
+
+                long filepos = ftell(valuetable_file);
+                if (filepos >= (long)INT32_MAX) {
+                    DEBUG("Too large value table\n");
+                    return false;
+                }
+
+                char *endptr;
+                uint64_t hashvalue = strtoul(key, &endptr, 10);
+                *(hashtable_map + hashvalue) = filepos;
+
+                size_t valuepos = 0;
+                do {
+                    uint32_t keylen;
+                    memcpy(&keylen, value+valuepos, sizeof(keylen));
+                    valuepos += sizeof(keylen);
+                    DEBUG("NEXT key[%u]: %s", keylen, value+valuepos);
+                    valuetable.write(value+valuepos, keylen);
+
+                    uint32_t data_valuesize;
+                    char *data_value = (char *)data.get(value+valuepos, keylen, &data_valuesize);
+                    if (data_value == NULL) {
+                        DEBUG("Cannot get hash2key value for %s\n", value+valuepos);
+                        return false;
+                    }
+
+                    valuetable.write(data_value, data_valuesize);
+                    wrote_data_count += 1;
+                
+                    valuepos += keylen;
+                } while(valuepos < vsp);
+                free(key);
+            
+                if (!cur->next())
+                    break;
+            } while (1);
+        
+            DEBUG("Wrote data count: " UINT64UF, wrote_data_count);
+        }
+    
         fclose(valuetable_file);
+        {
 
-        fseek(dbfile, 0, SEEK_SET);
-        fwrite(&header, sizeof(header), 1, dbfile);
-        fclose(dbfile);
-    }    
-    return true;
-}
+            valuetable_file = fopen(valuetable_path, "r");
+            if (valuetable_file == NULL) {perror("Cannot re-open valuetable"); return false;}
+            FILE *dbfile = ::fdopen(fd, "w");
+            if (dbfile == NULL) {perror("Cannot open DB file"); return false;}
 
-bool FrozenMapBuilder::build(const char *filename)
-{
-    int fd = ::open(filename, O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-    bool ok = build(fd);
-    ::close(fd);
-    return ok;
+            // fill header
+            char headerFill[PAGE_ALIGNMENT];
+            bzero(headerFill, sizeof(headerFill));
+            fwrite(headerFill, sizeof(headerFill), 1, dbfile);
+
+            // prepare header
+            FrozenHashMapHeader header;
+            bzero(&header, sizeof(header));
+
+            memcpy(header.magic, FROZENHASH_HEADER, sizeof(header.magic));
+            header.endian_check = DB_ENDIAN_CHECK;
+            header.version = DB_FORMAT_VERSION;
+            header.count = data.count();
+            header.hashsize = hashsize;
+            header.hashtable_size = hashtable_size;
+
+            fseek(valuetable_file, 0L, SEEK_END);
+            header.valuetable_size = ftell(valuetable_file);
+            fseek(valuetable_file, 0L, SEEK_SET);
+
+            header.hashtable_offset = ftell(dbfile);
+            // write hashtable
+            fwrite(hashtable_map, hashtable_size, 1, dbfile);
+            size_t padding_length = (hashtable_size/PAGE_ALIGNMENT+1)*PAGE_ALIGNMENT - hashtable_size;
+            fwrite(headerFill, padding_length, 1, dbfile);
+
+            // write valuetable
+            header.valuetable_offset = ftell(dbfile);
+            {
+                char copybuffer[1024*10];
+                do {
+                    size_t readbytes = fread(copybuffer, 1, sizeof(copybuffer), valuetable_file);
+                    if (readbytes > 0)
+                        fwrite(copybuffer, 1, readbytes, dbfile);
+                    if (readbytes != sizeof(copybuffer)) {
+                        if (feof(valuetable_file))
+                            break;
+                        perror("Reading valuetable file");
+                        return false;
+                    }
+                } while(1);
+            }
+    
+            munmap(hashtable_map, hashtable_size);
+            fclose(valuetable_file);
+
+            fseek(dbfile, 0, SEEK_SET);
+            fwrite(&header, sizeof(header), 1, dbfile);
+            fclose(dbfile);
+        }    
+        return true;
+    }
+
+    bool FrozenMapBuilder::build(const char *filename)
+    {
+        int fd = ::open(filename, O_CREAT|O_WRONLY|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+        bool ok = build(fd);
+        ::close(fd);
+        return ok;
+    }
 }

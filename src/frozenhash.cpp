@@ -15,150 +15,154 @@
 #include "MurmurHash3.h"
 #include "common.hpp"
 
-FrozenMap::FrozenMap() : header(0), hashtable_map(0), valuetable_map(0), valuetable(0)
-{
+namespace frozenhashmap {
 
-}
+    FrozenMap::FrozenMap() : header(0), hashtable_map(0), valuetable_map(0), valuetable(0)
+    {
 
-FrozenMap::~FrozenMap()
-{
-    if (hashtable_map && header)
-        munmap(hashtable_map, header->hashtable_size);
-    if (valuetable_map && header)
-        munmap(valuetable_map, header->valuetable_size);
-    delete header;
-    delete valuetable;
-}
-
-bool FrozenMap::open(const char *filename, off_t offset)
-{
-    int fd = ::open(filename, O_RDONLY);
-    if (fd < 0)
-        return false;
-    return open(fd, offset);
-}
-
-bool FrozenMap::open(int fd, off_t offset)
-{
-    m_fd = fd;
-    header = new FrozenHashMapHeader;
-    if (header == 0) return false;
-
-    if (::read(fd, header, sizeof(struct FrozenHashMapHeader)) != sizeof(struct FrozenHashMapHeader))
-        return false;
-
-    if (memcmp(FROZENHASH_HEADER, header->magic, sizeof(FROZENHASH_HEADER)) != 0) {
-        fprintf(stderr, "This file is not frozen hash map database\n");
-        return false;
     }
 
-    if (header->endian_check != DB_ENDIAN_CHECK) {
-        fprintf(stderr, "Wrong endian\n");
-        return false;
+    FrozenMap::~FrozenMap()
+    {
+        if (hashtable_map && header)
+            munmap(hashtable_map, header->hashtable_size);
+        if (valuetable_map && header)
+            munmap(valuetable_map, header->valuetable_size);
+        delete header;
+        delete valuetable;
     }
 
-    if (header->version != DB_FORMAT_VERSION) {
-        fprintf(stderr, "Wrong database format version\n");
-        return false;
+    bool FrozenMap::open(const char *filename, off_t offset)
+    {
+        int fd = ::open(filename, O_RDONLY);
+        if (fd < 0)
+            return false;
+        return open(fd, offset);
     }
 
-    hashtable_map = (uint64_t *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_SHARED, m_fd, offset + header->hashtable_offset);
-    if (hashtable_map == MAP_FAILED) return false;
+    bool FrozenMap::open(int fd, off_t offset)
+    {
+        m_fd = fd;
+        header = new FrozenHashMapHeader;
+        if (header == 0) return false;
 
-    valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_SHARED, m_fd, offset + header->valuetable_offset);
-    if (valuetable_map == MAP_FAILED) return false;
+        if (::read(fd, header, sizeof(struct FrozenHashMapHeader)) != sizeof(struct FrozenHashMapHeader))
+            return false;
 
-    valuetable = new ValueTableReader((const char*)valuetable_map, header->valuetable_size);
-    
-    return true;
-}
-
-const char *FrozenMap::get(const char *key, size_t keysp, size_t *valuesp) const
-{
-    uint64_t hash[2];
-    MurmurHash3_x64_128(key, keysp, HASH_RANDOM_SEED, hash);
-    uint64_t hashvalue = hash[0] % header->hashsize;
-    uint64_t valueoffset = hashtable_map[hashvalue];
-
-    if (valueoffset == UINT64_MAX)
-        return NULL;
-    
-    off_t nextoffset;
-
-    do {
-        uint32_t datakey_length;
-        const char *datakey = valuetable->readAt(valueoffset, &datakey_length, &nextoffset);
-        if (datakey == NULL)
-            return NULL;
-
-        /*
-        MurmurHash3_x64_128(datakey, datakey_length, HASH_RANDOM_SEED, hash);
-        if (hashvalue != (hash[0] % header->hashsize))
-            return NULL;
-        */
-
-        valueoffset = nextoffset;
-        uint32_t datavalue_length;
-        const char *datavalue = valuetable->readAt(valueoffset, &datavalue_length, &nextoffset);
-        if (datavalue == NULL)
-            return NULL;
-
-        if (keysp == datakey_length && (memcmp(key, datakey, keysp) == 0)) {
-            *valuesp = datavalue_length;
-            return datavalue;
+        if (memcmp(FROZENHASH_HEADER, header->magic, sizeof(FROZENHASH_HEADER)) != 0) {
+            fprintf(stderr, "This file is not frozen hash map database\n");
+            return false;
         }
-        valueoffset = nextoffset;
-    } while (1);
-    return NULL;
-}
 
-std::string FrozenMap::get(const std::string &key) const
-{
-    size_t valuesize;
-    const char *value = get(key.c_str(), key.length(), &valuesize);
-    if (value == NULL)
-        return std::string();
-    return std::string(value, valuesize);
-}
+        if (header->endian_check != DB_ENDIAN_CHECK) {
+            fprintf(stderr, "Wrong endian\n");
+            return false;
+        }
 
-uint64_t FrozenMap::count() const
-{
-    return header->count;
-}
+        if (header->version != DB_FORMAT_VERSION) {
+            fprintf(stderr, "Wrong database format version\n");
+            return false;
+        }
 
-FrozenMapCursor::FrozenMapCursor(FrozenMap *parent): m_parent(parent), valuetable(0)
-{
-    valuetable = new ValueTableReader((const char*)m_parent->valuetable_map, m_parent->header->valuetable_size);
-}
+        hashtable_map = (uint64_t *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_SHARED, m_fd, offset + header->hashtable_offset);
+        if (hashtable_map == MAP_FAILED) return false;
 
-FrozenMapCursor::~FrozenMapCursor()
-{
-    delete valuetable;
-}
+        valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_SHARED, m_fd, offset + header->valuetable_offset);
+        if (valuetable_map == MAP_FAILED) return false;
 
-FrozenMap *FrozenMapCursor::db()
-{
-    return m_parent;
-}
+        valuetable = new ValueTableReader((const char*)valuetable_map, header->valuetable_size);
+    
+        return true;
+    }
 
-bool FrozenMapCursor::nextString(std::pair<std::string, std::string> *pair)
-{
-    const char *key, *value;
-    size_t keylen, valuelen;
-    bool ok = next(&key, &keylen, &value, &valuelen);
-    if (!ok) return false;
-    pair->first = std::string(key, keylen);
-    pair->second = std::string(value, valuelen);
-    return true;
-}
+    const char *FrozenMap::get(const char *key, size_t keysp, size_t *valuesp) const
+    {
+        uint64_t hash[2];
+        MurmurHash3_x64_128(key, keysp, HASH_RANDOM_SEED, hash);
+        uint64_t hashvalue = hash[0] % header->hashsize;
+        uint64_t valueoffset = hashtable_map[hashvalue];
 
-bool FrozenMapCursor::next(const char **key, size_t *keylen, const char **value, size_t *valuelen)
-{
-    *key = valuetable->readNext(keylen);
-    if (*key == NULL)
-        return false;
-    *value = valuetable->readNext(valuelen);
-    if (*value == NULL)
-        return false;
-    return true;
+        if (valueoffset == UINT64_MAX)
+            return NULL;
+    
+        off_t nextoffset;
+
+        do {
+            uint32_t datakey_length;
+            const char *datakey = valuetable->readAt(valueoffset, &datakey_length, &nextoffset);
+            if (datakey == NULL)
+                return NULL;
+
+            /*
+              MurmurHash3_x64_128(datakey, datakey_length, HASH_RANDOM_SEED, hash);
+              if (hashvalue != (hash[0] % header->hashsize))
+              return NULL;
+            */
+
+            valueoffset = nextoffset;
+            uint32_t datavalue_length;
+            const char *datavalue = valuetable->readAt(valueoffset, &datavalue_length, &nextoffset);
+            if (datavalue == NULL)
+                return NULL;
+
+            if (keysp == datakey_length && (memcmp(key, datakey, keysp) == 0)) {
+                *valuesp = datavalue_length;
+                return datavalue;
+            }
+            valueoffset = nextoffset;
+        } while (1);
+        return NULL;
+    }
+
+    std::string FrozenMap::get(const std::string &key) const
+    {
+        size_t valuesize;
+        const char *value = get(key.c_str(), key.length(), &valuesize);
+        if (value == NULL)
+            return std::string();
+        return std::string(value, valuesize);
+    }
+
+    uint64_t FrozenMap::count() const
+    {
+        return header->count;
+    }
+
+    FrozenMapCursor::FrozenMapCursor(FrozenMap *parent): m_parent(parent), valuetable(0)
+    {
+        valuetable = new ValueTableReader((const char*)m_parent->valuetable_map, m_parent->header->valuetable_size);
+    }
+
+    FrozenMapCursor::~FrozenMapCursor()
+    {
+        delete valuetable;
+    }
+
+    FrozenMap *FrozenMapCursor::db()
+    {
+        return m_parent;
+    }
+
+    bool FrozenMapCursor::nextString(std::pair<std::string, std::string> *pair)
+    {
+        const char *key, *value;
+        size_t keylen, valuelen;
+        bool ok = next(&key, &keylen, &value, &valuelen);
+        if (!ok) return false;
+        pair->first = std::string(key, keylen);
+        pair->second = std::string(value, valuelen);
+        return true;
+    }
+
+    bool FrozenMapCursor::next(const char **key, size_t *keylen, const char **value, size_t *valuelen)
+    {
+        *key = valuetable->readNext(keylen);
+        if (*key == NULL)
+            return false;
+        *value = valuetable->readNext(valuelen);
+        if (*value == NULL)
+            return false;
+        return true;
+    }
+
 }
