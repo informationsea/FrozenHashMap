@@ -1,7 +1,7 @@
 EXTRA_DIST = gene_info_summary_head.txt.xz
 AM_CPPFLAGS = -DSFMT_MEXP=86243 -Wall -Wextra
 
-noinst_PROGRAMS = cdbpp frozenhashmap
+noinst_PROGRAMS = cdbpp frozenhashmap mutablehash
 noinst_DATA =  gene_info_summary_head.txt
 
 noinst_LTLIBRARIES = libperformance_common.la
@@ -9,6 +9,9 @@ libperformance_common_la_SOURCES = SFMT.c performance_common.cpp
 
 frozenhashmap_SOURCES = frozenhashmap_performance.cpp
 frozenhashmap_LDADD = libperformance_common.la $(top_builddir)/src/libfrozenhashmap.la
+
+mutablehash_SOURCES = mutablehashmap_performance.cpp
+mutablehash_LDADD = libperformance_common.la $(top_builddir)/src/libfrozenhashmap.la
 
 cdbpp_SOURCES = cdbpp_performance.cpp
 cdbpp_LDADD = libperformance_common.la
