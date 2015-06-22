@@ -61,5 +61,5 @@ AC_FUNC_MMAP
 AC_FUNC_STRERROR_R
 AC_CHECK_FUNCS([bzero dup2 fchdir getcwd getpagesize gettimeofday memset mkdir munmap putenv regcomp rmdir socket strcasecmp strchr strdup strerror strrchr strstr strtol strtoul strtoull])
 
-AC_CONFIG_FILES([src/Makefile Makefile test/Makefile test/performance/Makefile frozenhashmap.pc])
+AC_CONFIG_FILES([src/Makefile Makefile test/Makefile test/performance/Makefile frozenhashmap.pc test/gtest/Makefile])
 AC_OUTPUT
