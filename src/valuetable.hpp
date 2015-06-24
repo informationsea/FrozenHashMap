@@ -26,7 +26,7 @@ namespace frozenhashmap {
          */
         bool write(const char *buf, size_t length);
         bool write(std::string value);
-        long tell();
+        off_t tell();
     private:
         FILE *m_file;
     };
@@ -41,12 +41,13 @@ namespace frozenhashmap {
 
         inline const char* readAt(off_t pos, uint32_t *length, off_t *next) const {
             *length = *((uint32_t *)(datamap+pos));
-            *next = pos + frozenhashmap_private::calculate_aligned_length(*length) + sizeof(uint32_t);
+            if (next)
+                *next = pos + frozenhashmap_private::calculate_aligned_length(*length) + sizeof(uint32_t);
             return datamap+pos+sizeof(uint32_t);
         }
 
         bool isReady() { return ready; }
-        long tell();
+        off_t tell();
         int seek(off_t offset);
     private:
         int m_fd;

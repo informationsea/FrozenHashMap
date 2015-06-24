@@ -2,15 +2,18 @@
 #define FROZENHASHBUILDER_H
 
 #include <stdint.h>
+#include <stdio.h>
 #include <string>
 #include <functional>
 #include <vector>
 #include "mutablehash.hpp"
 
 namespace frozenhashmap {
+    class ValueTableWriter;
+    
     class FrozenMapBuilder {
     public:
-        FrozenMapBuilder(bool ainmemory = false);
+        FrozenMapBuilder();
         virtual ~FrozenMapBuilder();
 
         bool open(); // call this function first
@@ -21,16 +24,17 @@ namespace frozenhashmap {
         bool build(int fd);
         bool build(const char *filename);
     private:
-        bool inmemory;
-        frozenhashmap::MutableHash hash2key;
-        frozenhashmap::MutableHash data;
         char tempdir[PATH_MAX];
         bool ready;
 
-        char hash2key_path[PATH_MAX];
-        char data_path[PATH_MAX];
+        char hash2position_path[PATH_MAX];
         char hashtable_path[PATH_MAX];
         char valuetable_path[PATH_MAX];
+        
+        FILE *hash2position_file;
+        FILE *valuetable_file;
+        ValueTableWriter *valuetable;
+        uint64_t entryCount;
     };
 }
 

@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
     struct CFrozenHashMapBuilder;
-    struct CFrozenHashMapBuilder* CFrozenHashMapBuilderAllocate(bool inmemory);
+    struct CFrozenHashMapBuilder* CFrozenHashMapBuilderAllocate();
     bool CFrozenHashMapBuilderOpen(struct CFrozenHashMapBuilder *builder);
     bool CFrozenHashMapBuilderPutString(struct CFrozenHashMapBuilder *builder, const char *key, const char *value);
     bool CFrozenHashMapBuilderPut(struct CFrozenHashMapBuilder *builder, const char *key, size_t keylen, const char *value, size_t valuelen);

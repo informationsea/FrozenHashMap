@@ -121,11 +121,11 @@ namespace {
         ASSERT_STREQ("OK-Echo", tmp["Echo"].c_str());
         ASSERT_TRUE(3 == tmp.size());
     }
-
+    
     TEST(FROZENHASH, BUILDER2) {
         before();
         
-        FrozenMapBuilder builder(false);
+        FrozenMapBuilder builder;
         ASSERT_TRUE(builder.open());
 
         FILE *testdata = fopen("./geneid-symbol.txt", "r");
@@ -173,7 +173,6 @@ namespace {
         }
         fclose(testdata);
     }
-
 }
 
 int main(int argc, char **argv) {

@@ -37,9 +37,9 @@ namespace frozenhashmap {
         return write(value.c_str(), value.length());
     }
 
-    long ValueTableWriter::tell()
+    off_t ValueTableWriter::tell()
     {
-        return ftell(m_file);
+        return ftello(m_file);
     }
 
     ValueTableReader::ValueTableReader(int fd): m_fd(fd), currentpos(0)
@@ -76,7 +76,7 @@ namespace frozenhashmap {
         return datamap + origin;
     }
 
-    long ValueTableReader::tell()
+    off_t ValueTableReader::tell()
     {
         return currentpos;
     }

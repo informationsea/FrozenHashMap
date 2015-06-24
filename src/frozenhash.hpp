@@ -12,6 +12,7 @@ namespace frozenhashmap {
 
     class ValueTableReader;
     struct FrozenHashMapHeader;
+    struct FrozenHashMapHashPosition;
     class FrozenMapCursor;
 
     class FrozenMap {
@@ -30,7 +31,7 @@ namespace frozenhashmap {
         int m_fd;
         struct FrozenHashMapHeader *header;
 
-        uint64_t *hashtable_map;
+        FrozenHashMapHashPosition *hashtable_map;
         void *valuetable_map;
         ValueTableReader *valuetable;
     };

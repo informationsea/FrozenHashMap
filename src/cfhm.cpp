@@ -16,7 +16,7 @@ struct CFrozenHashMapCursor {
     class FrozenMapCursor *cur;
 };
 
-struct CFrozenHashMapBuilder* CFrozenHashMapBuilderAllocate(bool inmemory)
+struct CFrozenHashMapBuilder* CFrozenHashMapBuilderAllocate()
 {
     return new CFrozenHashMapBuilder;
 }

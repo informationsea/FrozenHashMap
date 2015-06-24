@@ -12,7 +12,7 @@ namespace {
     TEST(FROZENHASH_CBINDING, CBINDING) {
         ASSERT_EQ(0, system("mkdir -p ./tmp"));
 
-        struct CFrozenHashMapBuilder *builder = CFrozenHashMapBuilderAllocate(false);
+        struct CFrozenHashMapBuilder *builder = CFrozenHashMapBuilderAllocate();
         ASSERT_TRUE(builder != NULL);
         ASSERT_TRUE(CFrozenHashMapBuilderOpen(builder));
         ASSERT_TRUE(CFrozenHashMapBuilderPutString(builder, "Hi", "OK-Hi"));

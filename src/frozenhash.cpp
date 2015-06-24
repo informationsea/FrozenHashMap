@@ -15,6 +15,8 @@
 #include "MurmurHash3.h"
 #include "common.hpp"
 
+#define DEBUG(fmt,...) (fprintf(stderr, __FILE__ ": %3d: " fmt "\n" ,__LINE__, ## __VA_ARGS__))
+
 namespace frozenhashmap {
 
     FrozenMap::FrozenMap() : header(0), hashtable_map(0), valuetable_map(0), valuetable(0)
@@ -49,6 +51,14 @@ namespace frozenhashmap {
         if (::read(fd, header, sizeof(struct FrozenHashMapHeader)) != sizeof(struct FrozenHashMapHeader))
             return false;
 
+        //DEBUG("HEADER             COUNT: " UINT64UF, header->count);
+        //DEBUG("HEADER          HASHSIZE: " UINT64UF, header->hashsize);
+        //DEBUG("HEADER  HASHTABLE_OFFSET: " UINT64UF, header->hashtable_offset);
+        //DEBUG("HEADER    HASHTABLE_SIZE: " UINT64UF, header->hashtable_size);
+        //DEBUG("HEADER VALUETABLE_OFFSET: " UINT64UF, header->valuetable_offset);
+        //DEBUG("HEADER   VALUETABLE_SIZE: " UINT64UF, header->valuetable_size);
+
+
         if (memcmp(FROZENHASH_HEADER, header->magic, sizeof(FROZENHASH_HEADER)) != 0) {
             fprintf(stderr, "This file is not frozen hash map database\n");
             return false;
@@ -64,10 +74,19 @@ namespace frozenhashmap {
             return false;
         }
 
-        hashtable_map = (uint64_t *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_SHARED, m_fd, offset + header->hashtable_offset);
+        hashtable_map = (FrozenHashMapHashPosition *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_SHARED,
+                                                          m_fd, offset + header->hashtable_offset);
         if (hashtable_map == MAP_FAILED) return false;
 
-        valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_SHARED, m_fd, offset + header->valuetable_offset);
+        FrozenHashMapHashPosition empty;
+        memset(&empty, 0xff, sizeof(empty));
+        for (uint64_t i = 0; i < header->hashsize; i++) {
+            if (memcmp(&empty, hashtable_map+i, sizeof(empty)) == 0) continue;
+            //fprintf(stderr, "table[%llu] = (%llu, %llx)\n", i, hashtable_map[i].hash_value, hashtable_map[i].value_position);
+        }
+
+        valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_SHARED,
+                              m_fd, offset + header->valuetable_offset);
         if (valuetable_map == MAP_FAILED) return false;
 
         valuetable = new ValueTableReader((const char*)valuetable_map, header->valuetable_size);
@@ -79,39 +98,40 @@ namespace frozenhashmap {
     {
         uint64_t hash[2];
         MurmurHash3_x64_128(key, keysp, HASH_RANDOM_SEED, hash);
-        uint64_t hashvalue = hash[0] % header->hashsize;
-        uint64_t valueoffset = hashtable_map[hashvalue];
+        size_t table_position = hash[0] % header->hashsize;
+        //fprintf(stderr, "GET %s %lu = %llu\n", key, keysp, hash[0]);
 
-        if (valueoffset == UINT64_MAX)
-            return NULL;
-    
-        off_t nextoffset;
-
+        FrozenHashMapHashPosition empty;
+        memset(&empty, 0xff, sizeof(empty));
+        
         do {
-            uint32_t datakey_length;
-            const char *datakey = valuetable->readAt(valueoffset, &datakey_length, &nextoffset);
-            if (datakey == NULL)
-                return NULL;
-
-            /*
-              MurmurHash3_x64_128(datakey, datakey_length, HASH_RANDOM_SEED, hash);
-              if (hashvalue != (hash[0] % header->hashsize))
-              return NULL;
-            */
-
-            valueoffset = nextoffset;
-            uint32_t datavalue_length;
-            const char *datavalue = valuetable->readAt(valueoffset, &datavalue_length, &nextoffset);
-            if (datavalue == NULL)
-                return NULL;
-
-            if (keysp == datakey_length && (memcmp(key, datakey, keysp) == 0)) {
-                *valuesp = datavalue_length;
-                return datavalue;
+            do {
+                //fprintf(stderr, "table_position = %lu // %llu // %llx // %llx\n", table_position, header->hashsize, hashtable_map[table_position].hash_value, hashtable_map[table_position].value_position);
+                if (memcmp(hashtable_map + table_position, &empty, sizeof(empty)) == 0)
+                    return NULL; // Not found
+                
+                if (hashtable_map[table_position].hash_value == hash[0])
+                    break; // found hash equally entry
+                table_position = (table_position + 1) % header->hashsize;
+            } while (1);
+            
+            off_t key_position = hashtable_map[table_position].value_position;
+            //fprintf(stderr, "key position = %LLD\n", key_position);
+            off_t value_position;
+            uint32_t keylen;
+            const char *keydata = valuetable->readAt(key_position, &keylen, &value_position);
+            if (keylen != keysp) {
+                table_position = (table_position + 1) % header->hashsize; continue;
             }
-            valueoffset = nextoffset;
-        } while (1);
-        return NULL;
+            if (memcmp(key, keydata, keysp) != 0) {
+                table_position = (table_position + 1) % header->hashsize; continue;
+            }
+
+            uint32_t len;
+            const char* value = valuetable->readAt(value_position, &len, NULL);
+            *valuesp = len;
+            return value;
+        } while(1);
     }
 
     std::string FrozenMap::get(const std::string &key) const
