@@ -2,8 +2,9 @@
 #define COMMON_H
 
 #include <stdint.h>
-#include <stdio.h>
-#include <limits.h>
+#include <cstdio>
+#include <cstring>
+#include <limits>
 #include "config.h"
 
 #define HASH_SIZE_FACTOR 2
@@ -25,7 +26,7 @@
 #define UINT64UF "%lu"
 #endif
 
-#define FROZENHASH_HEADER "FROZENHASHMAP"
+const char FROZENHASH_HEADER[16] = "FROZENHASHMAP";
 #define DB_ENDIAN_CHECK 0x0123456789ABCDEF
 #define DB_FORMAT_VERSION 0x02
 
@@ -44,13 +45,17 @@ namespace frozenhashmap {
         FrozenHashMapHeader(uint64_t count, uint64_t hashsize,
                             uint64_t hashtable_offset, uint64_t hashtable_size,
                             uint64_t valuetable_offset, uint64_t valuetable_size) :
-            magic(FROZENHASH_HEADER), endian_check(DB_ENDIAN_CHECK), version(DB_FORMAT_VERSION),
+            endian_check(DB_ENDIAN_CHECK), version(DB_FORMAT_VERSION),
             count(count), hashsize(hashsize),
             hashtable_offset(hashtable_offset), hashtable_size(hashtable_size),
-            valuetable_offset(valuetable_offset), valuetable_size(valuetable_size){}
+            valuetable_offset(valuetable_offset), valuetable_size(valuetable_size) {
+            std::memcpy(magic, FROZENHASH_HEADER, sizeof(magic));
+        }
 
         FrozenHashMapHeader() :
-            magic(FROZENHASH_HEADER), endian_check(DB_ENDIAN_CHECK), version(DB_FORMAT_VERSION) {}
+            endian_check(DB_ENDIAN_CHECK), version(DB_FORMAT_VERSION) {
+            std::memcpy(magic, FROZENHASH_HEADER, sizeof(magic));
+        }
     };
 
     struct FrozenHashMapHashPosition {

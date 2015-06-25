@@ -15,4 +15,3 @@ date >> testdata/log.txt
 ./kyotocabinet_kct 2>> testdata/log.txt
 ./cdbpp 2>> testdata/log.txt
 ./frozenhashmap 2>> testdata/log.txt
-./mutablehash 2>> testdata/log.txt
