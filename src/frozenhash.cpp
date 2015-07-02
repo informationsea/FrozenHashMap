@@ -185,4 +185,30 @@ namespace frozenhashmap {
         return true;
     }
 
+    void FrozenMap::printInfo(std::FILE *output) const
+    {
+        fprintf(output, "           Version: "UINT64UF"\n", header->version);
+        fprintf(output, "             Count: "UINT64UF"\n", header->count);
+        fprintf(output, "         Hash size: "UINT64UF"\n", header->hashsize);
+        fprintf(output, " Hash table offset: "UINT64UF"\n", header->hashtable_offset);
+        fprintf(output, "   Hash table size: "UINT64UF"\n", header->hashtable_size);
+        fprintf(output, "Value table offset: "UINT64UF"\n", header->valuetable_offset);
+        fprintf(output, "  Value table size: "UINT64UF"\n", header->valuetable_size);
+
+        uint64_t longest_nonempty = 0;
+        uint64_t current_nonempty = 0;
+        FrozenHashMapHashPosition empty;
+        memset(&empty, 0xff, sizeof(empty));
+        
+        for (uint64_t i = 0; i < header->hashsize; i++) {
+            if (memcmp(&empty, hashtable_map+i, sizeof(empty)) == 0) {
+                current_nonempty = 0;
+            } else {
+                current_nonempty += 1;
+                longest_nonempty = MAX(current_nonempty, longest_nonempty);
+            }
+        }
+        fprintf(output, "Longest non-empty hash table: "UINT64UF"\n", longest_nonempty);
+        
+    }
 }

@@ -21,9 +21,11 @@
 #ifdef __APPLE__
 #define UINT64XF "%llx"
 #define UINT64UF "%llu"
+#define INT64DF  "%lld"
 #else
 #define UINT64XF "%lx"
 #define UINT64UF "%lu"
+#define INT64DF  "%ld"
 #endif
 
 const char FROZENHASH_HEADER[16] = "FROZENHASHMAP";

@@ -7,6 +7,7 @@
 #include <vector>
 #include <utility>
 #include <sys/mman.h>
+#include <cstdio>
 
 namespace frozenhashmap {
 
@@ -26,6 +27,8 @@ namespace frozenhashmap {
         const char *get(const char *key, size_t keysp, size_t *valuesp) const;
         std::string get(const std::string &key) const;
         uint64_t count() const;
+
+        void printInfo(std::FILE *output) const;
     
     private:
         int m_fd;

@@ -171,8 +171,8 @@ namespace frozenhashmap {
             if (fread(&pos, sizeof(pos), 1, hash2position_file) != 1) return false;
             size_t candidatePos = pos.hash_value % header.hashsize;
             do {
-                DEBUG("Candidate Pos: %zu  %llu %llu %llu %p", candidatePos, header.hashsize, lseek(fd, 0, SEEK_CUR), header.valuetable_offset, hashtable + candidatePos);
-                DEBUG("Data : %lld", hashtable[candidatePos].value_position);
+                DEBUG("Candidate Pos: %zu  "UINT64UF" "UINT64UF" "UINT64UF" %p", candidatePos, header.hashsize, lseek(fd, 0, SEEK_CUR), header.valuetable_offset, hashtable + candidatePos);
+                DEBUG("Data : "INT64DF, hashtable[candidatePos].value_position);
                 if (memcmp(hashtable + candidatePos, &empty, sizeof(empty)) == 0) {
                     hashtable[candidatePos] = pos;
                     break;
@@ -185,7 +185,7 @@ namespace frozenhashmap {
 
         if (!fillbytes(fd, 0xff, header.valuetable_offset - lseek(fd, 0, SEEK_CUR)))
             return false;
-        DEBUG("END HASHTABLE %lld %llu", lseek(fd, 0, SEEK_CUR), header.valuetable_offset);
+        DEBUG("END HASHTABLE "INT64DF" "UINT64UF, lseek(fd, 0, SEEK_CUR), header.valuetable_offset);
         
         int valuetable_fd = ::open(valuetable_path, O_RDONLY);
         copydata(fd, valuetable_fd);

@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
         fprintf(out,
                 "%s command ...\n\n"
                 "%s help                 : show this help\n"
-                "%s dump DBFILE          : show list of data\n"
+                "%s dump DBFILE          : show list of database\n"
+                "%s info DBFILE          : show information of database\n"
                 "%s get DBFILE KEY       : get a value corresponding to KEY\n"
                 "%s build DBFILE TSVFILE : build database for TSVFILE\n"
             , sep, sep, sep, sep, sep);
@@ -66,7 +67,7 @@ int main(int argc, char *argv[])
             fprintf(stderr, "Cannot open database\n");
             return 1;
         }
-        printf("Count: " UINT64UF "\n", map.count());
+        map.printInfo(stdout);
         break;}
     case DUMP: {
         class FrozenMap map;
