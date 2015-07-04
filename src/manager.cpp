@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
                 "%s info DBFILE          : show information of database\n"
                 "%s get DBFILE KEY       : get a value corresponding to KEY\n"
                 "%s build DBFILE TSVFILE : build database for TSVFILE\n"
-            , sep, sep, sep, sep, sep);
+            , sep, sep, sep, sep, sep, sep);
         break;}
     case INFO: {
         class FrozenMap map;
