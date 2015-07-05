@@ -74,7 +74,7 @@ namespace frozenhashmap {
             return false;
         }
 
-        hashtable_map = (FrozenHashMapHashPosition *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_SHARED,
+        hashtable_map = (FrozenHashMapHashPosition *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_PRIVATE,
                                                           m_fd, offset + header->hashtable_offset);
         if (hashtable_map == MAP_FAILED) return false;
 
@@ -85,7 +85,7 @@ namespace frozenhashmap {
             //fprintf(stderr, "table[%llu] = (%llu, %llx)\n", i, hashtable_map[i].hash_value, hashtable_map[i].value_position);
         }
 
-        valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_SHARED,
+        valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_PRIVATE,
                               m_fd, offset + header->valuetable_offset);
         if (valuetable_map == MAP_FAILED) return false;
 
