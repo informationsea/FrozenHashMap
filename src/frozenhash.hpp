@@ -21,8 +21,8 @@ namespace frozenhashmap {
     public:
         FrozenMap();
         virtual ~FrozenMap();
-        bool open(const char *filename, off_t offset = 0);
-        bool open(int fd, off_t offset = 0);
+        bool open(const char *filename, off_t offset = 0, bool onmemory = false);
+        bool open(int fd, off_t offset = 0, bool onmemory = false);
     
         const char *get(const char *key, size_t keysp, size_t *valuesp) const;
         std::string get(const std::string &key) const;

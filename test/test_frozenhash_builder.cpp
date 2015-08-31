@@ -88,38 +88,40 @@ namespace {
         ASSERT_TRUE(builder.put("Push", 4, "OK-Push", 7));
         ASSERT_TRUE(builder.build("./tmp/dbfile.dat"));
 
-        FrozenMap map;
-        ASSERT_TRUE(map.open(("./tmp/dbfile.dat")));
+        for (int i = 0; i < 2; i++) {
+            FrozenMap map;
+            ASSERT_TRUE(map.open("./tmp/dbfile.dat", 0, i == 1));
 
-        size_t length;
-        const char *data;
-        data = map.get("Hi", 2, &length);
-        ASSERT_TRUE(data);
-        ASSERT_MEMEQ("OK-Hi", 5, data, length);
+            size_t length;
+            const char *data;
+            data = map.get("Hi", 2, &length);
+            ASSERT_TRUE(data);
+            ASSERT_MEMEQ("OK-Hi", 5, data, length);
         
-        data = map.get("Echo", 4, &length);
-        ASSERT_TRUE(data);
-        ASSERT_MEMEQ("OK-Echo", 7, data, length);
+            data = map.get("Echo", 4, &length);
+            ASSERT_TRUE(data);
+            ASSERT_MEMEQ("OK-Echo", 7, data, length);
         
-        data = map.get("Push", 4, &length);
-        ASSERT_TRUE(data);
-        ASSERT_MEMEQ("OK-Push", 7, data, length);
+            data = map.get("Push", 4, &length);
+            ASSERT_TRUE(data);
+            ASSERT_MEMEQ("OK-Push", 7, data, length);
 
-        data = map.get("Unknown", 7, &length);
-        ASSERT_FALSE(data);
+            data = map.get("Unknown", 7, &length);
+            ASSERT_FALSE(data);
         
-        ASSERT_TRUE(3 == map.count());
+            ASSERT_TRUE(3 == map.count());
 
-        FrozenMapCursor cursor(&map);
-        std::map<std::string, std::string> tmp;
-        std::pair<std::string, std::string> pair;
-        while (cursor.nextString(&pair)) {
-            tmp[pair.first] = pair.second;
+            FrozenMapCursor cursor(&map);
+            std::map<std::string, std::string> tmp;
+            std::pair<std::string, std::string> pair;
+            while (cursor.nextString(&pair)) {
+                tmp[pair.first] = pair.second;
+            }
+            ASSERT_STREQ("OK-Push", tmp["Push"].c_str());
+            ASSERT_STREQ("OK-Hi", tmp["Hi"].c_str());
+            ASSERT_STREQ("OK-Echo", tmp["Echo"].c_str());
+            ASSERT_TRUE(3 == tmp.size());
         }
-        ASSERT_STREQ("OK-Push", tmp["Push"].c_str());
-        ASSERT_STREQ("OK-Hi", tmp["Hi"].c_str());
-        ASSERT_STREQ("OK-Echo", tmp["Echo"].c_str());
-        ASSERT_TRUE(3 == tmp.size());
     }
     
     TEST(FROZENHASH, BUILDER2) {
@@ -147,29 +149,31 @@ namespace {
         }
         
         ASSERT_TRUE(builder.build("./tmp/dbfile2.dat"));
-        fseek(testdata, 0, SEEK_SET);
 
-        FrozenMap map;
-        ASSERT_TRUE(map.open(("./tmp/dbfile2.dat")));
-        ASSERT_TRUE(47734 == map.count());
+        for (int i = 0; i < 2; i++) {
+            fseek(testdata, 0, SEEK_SET);
+            FrozenMap map;
+            ASSERT_TRUE(map.open("./tmp/dbfile2.dat", 0, i == 1));
+            ASSERT_TRUE(47734 == map.count());
 
-        while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
-            char *p = strchr(linebuf, '|');
-            if (p == NULL) continue;
-            *p = '\0';
-            p++;
-            char *e = strchr(p, '\n');
-            *e = '\0';
+            while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
+                char *p = strchr(linebuf, '|');
+                if (p == NULL) continue;
+                *p = '\0';
+                p++;
+                char *e = strchr(p, '\n');
+                *e = '\0';
 
-            size_t length;
-            const char *data;
-            data = map.get(linebuf, strlen(linebuf), &length);
-            if (data == NULL) {
-                fprintf(stderr, "Cannot obtain value for %s (expected %s)\n", linebuf, p);
+                size_t length;
+                const char *data;
+                data = map.get(linebuf, strlen(linebuf), &length);
+                if (data == NULL) {
+                    fprintf(stderr, "Cannot obtain value for %s (expected %s)\n", linebuf, p);
+                }
+                ASSERT_TRUE(data);//, cut_message("Cannot obtain value for %s (expected %s)", linebuf, p));
+                ASSERT_MEMEQ(p, strlen(p), data, length);
+                bzero(linebuf, sizeof(linebuf));
             }
-            ASSERT_TRUE(data);//, cut_message("Cannot obtain value for %s (expected %s)", linebuf, p));
-            ASSERT_MEMEQ(p, strlen(p), data, length);
-            bzero(linebuf, sizeof(linebuf));
         }
         fclose(testdata);
     }

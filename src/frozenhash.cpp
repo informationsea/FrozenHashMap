@@ -34,15 +34,15 @@ namespace frozenhashmap {
         delete valuetable;
     }
 
-    bool FrozenMap::open(const char *filename, off_t offset)
+    bool FrozenMap::open(const char *filename, off_t offset, bool onmemory)
     {
         int fd = ::open(filename, O_RDONLY);
         if (fd < 0)
             return false;
-        return open(fd, offset);
+        return open(fd, offset, onmemory);
     }
 
-    bool FrozenMap::open(int fd, off_t offset)
+    bool FrozenMap::open(int fd, off_t offset, bool onmemory)
     {
         m_fd = fd;
         header = new FrozenHashMapHeader;
@@ -74,9 +74,16 @@ namespace frozenhashmap {
             return false;
         }
 
-        hashtable_map = (FrozenHashMapHashPosition *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_PRIVATE,
-                                                          m_fd, offset + header->hashtable_offset);
-        if (hashtable_map == MAP_FAILED) return false;
+        if (onmemory) {
+            hashtable_map = (FrozenHashMapHashPosition *)malloc(header->hashtable_size);
+            if (hashtable_map == NULL) return false;
+            if (lseek(m_fd, offset + header->hashtable_offset, SEEK_SET) != offset + (off_t)header->hashtable_offset) return false;
+            if (read(m_fd, hashtable_map, header->hashtable_size) != (ssize_t)header->hashtable_size) return false;
+        } else {
+            hashtable_map = (FrozenHashMapHashPosition *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_PRIVATE,
+                                                              m_fd, offset + header->hashtable_offset);
+            if (hashtable_map == MAP_FAILED) return false;
+        }
 
         FrozenHashMapHashPosition empty;
         memset(&empty, 0xff, sizeof(empty));
@@ -85,12 +92,18 @@ namespace frozenhashmap {
             //fprintf(stderr, "table[%llu] = (%llu, %llx)\n", i, hashtable_map[i].hash_value, hashtable_map[i].value_position);
         }
 
-        valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_PRIVATE,
-                              m_fd, offset + header->valuetable_offset);
-        if (valuetable_map == MAP_FAILED) return false;
+        if (onmemory) {
+            valuetable_map = malloc(header->valuetable_size);
+            if (valuetable_map == NULL) return false;
+            if (lseek(m_fd, offset + header->valuetable_offset, SEEK_SET) != offset + (off_t)header->valuetable_offset) return false;
+            if (read(m_fd, valuetable_map, header->valuetable_size) != (ssize_t)header->valuetable_size) return false;
+        } else {
+            valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_PRIVATE,
+                                  m_fd, offset + header->valuetable_offset);
+            if (valuetable_map == MAP_FAILED) return false;
+        }
 
         valuetable = new ValueTableReader((const char*)valuetable_map, header->valuetable_size);
-    
         return true;
     }
 

@@ -1,5 +1,6 @@
 EXTRA_DIST = gene_info_summary_head.txt.xz
 AM_CPPFLAGS = -DSFMT_MEXP=86243 -Wall -Wextra
+AM_LDFLAGS = -lz
 
 noinst_PROGRAMS = cdbpp frozenhashmap mutablehash
 noinst_DATA =  gene_info_summary_head.txt
