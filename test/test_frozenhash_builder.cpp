@@ -127,34 +127,19 @@ namespace {
     TEST(FROZENHASH, BUILDER2) {
         before();
         
-        FrozenMapBuilder builder;
-        ASSERT_TRUE(builder.open());
 
         FILE *testdata = fopen("./geneid-symbol.txt", "r");
         ASSERT_TRUE(testdata);
 
-        char linebuf[256];
-        bzero(linebuf, sizeof(linebuf));
+        for (int j = 0; j < 2; j++) {
+            //fprintf(stderr, "testing %d\n", j);
 
-        while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
-            char *p = strchr(linebuf, '|');
-            if (p == NULL) continue;
-            *p = '\0';
-            p++;
-            char *e = strchr(p, '\n');
-            *e = '\0';
+            FrozenMapBuilder builder;
+            ASSERT_TRUE(builder.open());
 
-            ASSERT_TRUE(builder.put(linebuf, p));
+            char linebuf[256];
             bzero(linebuf, sizeof(linebuf));
-        }
-        
-        ASSERT_TRUE(builder.build("./tmp/dbfile2.dat"));
-
-        for (int i = 0; i < 2; i++) {
-            fseek(testdata, 0, SEEK_SET);
-            FrozenMap map;
-            ASSERT_TRUE(map.open("./tmp/dbfile2.dat", 0, i == 1));
-            ASSERT_TRUE(47734 == map.count());
+            ASSERT_EQ((off_t)0, fseek(testdata, 0, SEEK_SET));
 
             while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
                 char *p = strchr(linebuf, '|');
@@ -164,15 +149,39 @@ namespace {
                 char *e = strchr(p, '\n');
                 *e = '\0';
 
-                size_t length;
-                const char *data;
-                data = map.get(linebuf, strlen(linebuf), &length);
-                if (data == NULL) {
-                    fprintf(stderr, "Cannot obtain value for %s (expected %s)\n", linebuf, p);
-                }
-                ASSERT_TRUE(data);//, cut_message("Cannot obtain value for %s (expected %s)", linebuf, p));
-                ASSERT_MEMEQ(p, strlen(p), data, length);
+                ASSERT_TRUE(builder.put(linebuf, p));
                 bzero(linebuf, sizeof(linebuf));
+            }
+            
+            char filename[PATH_MAX];
+            snprintf(filename, sizeof(filename)-1, "./tmp/dbfile2-%d.dat", j);
+            
+            ASSERT_TRUE(builder.build(filename, j == 1));
+
+            for (int i = 0; i < 2; i++) {
+                fseek(testdata, 0, SEEK_SET);
+                FrozenMap map;
+                ASSERT_TRUE(map.open(filename, 0, i == 1));
+                ASSERT_TRUE(47734 == map.count());
+
+                while (fgets(linebuf, sizeof(linebuf), testdata) != NULL) {
+                    char *p = strchr(linebuf, '|');
+                    if (p == NULL) continue;
+                    *p = '\0';
+                    p++;
+                    char *e = strchr(p, '\n');
+                    *e = '\0';
+
+                    size_t length;
+                    const char *data;
+                    data = map.get(linebuf, strlen(linebuf), &length);
+                    if (data == NULL) {
+                        fprintf(stderr, "Cannot obtain value for %s (expected %s)\n", linebuf, p);
+                    }
+                    ASSERT_TRUE(data);//, cut_message("Cannot obtain value for %s (expected %s)", linebuf, p));
+                    ASSERT_MEMEQ(p, strlen(p), data, length);
+                    bzero(linebuf, sizeof(linebuf));
+                }
             }
         }
         fclose(testdata);

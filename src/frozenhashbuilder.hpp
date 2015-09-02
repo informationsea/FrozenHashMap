@@ -21,8 +21,8 @@ namespace frozenhashmap {
         bool put(const std::string &key, const std::string &value);
         bool put(const char *key, size_t keylen, const char *value, size_t valuelen);
     
-        bool build(int fd);
-        bool build(const char *filename);
+        bool build(int fd, bool onmemory = false);
+        bool build(const char *filename, bool onmemory = false);
     private:
         char tempdir[PATH_MAX];
         bool ready;

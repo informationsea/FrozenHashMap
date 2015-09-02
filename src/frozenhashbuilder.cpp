@@ -121,7 +121,7 @@ namespace frozenhashmap {
     }
 
 
-    bool FrozenMapBuilder::build(int fd)
+    bool FrozenMapBuilder::build(int fd, bool onmemory)
     {
         if (!ready) return false;
 
@@ -142,6 +142,7 @@ namespace frozenhashmap {
 
         fclose(valuetable_file);
         valuetable_file = 0;
+        ready = false;
 
         ssize_t wroteBytes = write(fd, &header, sizeof(header));
         if (wroteBytes != sizeof(header)) return false;
@@ -152,12 +153,19 @@ namespace frozenhashmap {
         if (!fillbytes(fd, 0xff, header.hashtable_size))
             return false;
 
-        struct FrozenHashMapHashPosition *hashtable =
-            (struct FrozenHashMapHashPosition *)mmap(NULL,
-                                                     header.hashtable_size,
-                                                     PROT_WRITE|PROT_READ,
-                                                     MAP_FILE|MAP_SHARED,
-                                                     fd, header.hashtable_offset);
+        struct FrozenHashMapHashPosition *hashtable;
+
+        if (onmemory) {
+            hashtable = (struct FrozenHashMapHashPosition *)malloc(header.hashtable_size);
+            memset(hashtable, 0xff, header.hashtable_size);
+        } else {
+            hashtable = (struct FrozenHashMapHashPosition *)mmap(NULL,
+                                                                 header.hashtable_size,
+                                                                 PROT_WRITE|PROT_READ,
+                                                                 MAP_FILE|MAP_SHARED,
+                                                                 fd, header.hashtable_offset);
+        }
+        
         if (hashtable == MAP_FAILED)
             return false;
 
@@ -181,7 +189,14 @@ namespace frozenhashmap {
             } while (1);
         }
 
-        if (munmap(hashtable, sizeof(struct FrozenHashMapHashPosition *)*header.hashsize) != 0) return false;
+        if (onmemory) {
+            if (lseek(fd, header.hashtable_offset, SEEK_SET) < 0) return false;
+            if (write(fd, hashtable, header.hashtable_size) != (ssize_t)header.hashtable_size) return false;
+            if (lseek(fd, 0, SEEK_END) < 0) return false;
+            free(hashtable);
+        } else {
+            if (munmap(hashtable, header.hashtable_size) != 0) return false;
+        }
 
         if (!fillbytes(fd, 0xff, header.valuetable_offset - lseek(fd, 0, SEEK_CUR)))
             return false;
@@ -194,10 +209,10 @@ namespace frozenhashmap {
         return true;
     }
 
-    bool FrozenMapBuilder::build(const char *filename)
+    bool FrozenMapBuilder::build(const char *filename, bool onmemory)
     {
         int fd = ::open(filename, O_CREAT|O_RDWR|O_TRUNC, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-        bool ok = build(fd);
+        bool ok = build(fd, onmemory);
         ::close(fd);
         return ok;
     }
