@@ -75,10 +75,25 @@ namespace frozenhashmap {
         }
 
         if (onmemory) {
-            hashtable_map = (FrozenHashMapHashPosition *)malloc(header->hashtable_size);
-            if (hashtable_map == NULL) return false;
+            hashtable_map = (FrozenHashMapHashPosition *)mmap(NULL, header->hashtable_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS,
+                                                              -1, 0);
+            if (hashtable_map == MAP_FAILED) {
+                return false;
+            }
             if (lseek(m_fd, offset + header->hashtable_offset, SEEK_SET) != offset + (off_t)header->hashtable_offset) return false;
-            if (read(m_fd, hashtable_map, header->hashtable_size) != (ssize_t)header->hashtable_size) return false;
+            {
+                ssize_t remainBytes = (ssize_t)header->hashtable_size;
+                char *readPosition = (char *)hashtable_map;
+                
+                while (remainBytes > 0) {
+                    ssize_t readBytes = read(m_fd, readPosition, remainBytes);
+                    if (readBytes < 0) return false;
+                    readPosition += readBytes;
+                    remainBytes -= readBytes;
+                }
+            }
+
+
         } else {
             hashtable_map = (FrozenHashMapHashPosition *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_PRIVATE,
                                                               m_fd, offset + header->hashtable_offset);
@@ -93,10 +108,23 @@ namespace frozenhashmap {
         }
 
         if (onmemory) {
-            valuetable_map = malloc(header->valuetable_size);
-            if (valuetable_map == NULL) return false;
+            valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS,
+                                  -1, 0);
+            if (valuetable_map == MAP_FAILED)
+                return false;
             if (lseek(m_fd, offset + header->valuetable_offset, SEEK_SET) != offset + (off_t)header->valuetable_offset) return false;
-            if (read(m_fd, valuetable_map, header->valuetable_size) != (ssize_t)header->valuetable_size) return false;
+            {
+                ssize_t remainBytes = (ssize_t)header->valuetable_size;
+                char *readPosition = (char *)valuetable_map;
+                
+                while (remainBytes > 0) {
+                    ssize_t readBytes = read(m_fd, readPosition, remainBytes);
+                    if (readBytes < 0) return false;
+                    readPosition += readBytes;
+                    remainBytes -= readBytes;
+                }
+            }
+            
         } else {
             valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_PRIVATE,
                                   m_fd, offset + header->valuetable_offset);
