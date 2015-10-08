@@ -5,10 +5,11 @@
 #include <string>
 #include <stdint.h>
 
+#define VALUE_TABLE_ALIGNMENT_BYTES 4
+
 namespace frozenhashmap {
 
     namespace frozenhashmap_private {
-#define VALUE_TABLE_ALIGNMENT_BYTES 4
 
         static inline size_t calculate_aligned_length(size_t length)
         {

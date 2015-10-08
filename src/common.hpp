@@ -9,7 +9,6 @@
 
 #define HASH_SIZE_FACTOR 2
 #define HASH_RANDOM_SEED 1961288601U
-#define HASH_VALUE_BYTES 8
 
 #define _CONCAT(x, y) x ## y
 #define CONCAT(x, y) _CONCAT(x, y)
@@ -30,7 +29,7 @@
 
 const char FROZENHASH_HEADER[16] = "FROZENHASHMAP";
 #define DB_ENDIAN_CHECK 0x0123456789ABCDEF
-#define DB_FORMAT_VERSION 0x02
+#define DB_FORMAT_VERSION 0x03
 
 namespace frozenhashmap {
     struct FrozenHashMapHeader {
@@ -61,10 +60,10 @@ namespace frozenhashmap {
     };
 
     struct FrozenHashMapHashPosition {
-        uint64_t hash_value;
-        off_t value_position;
+        uint32_t hash_value;
+        uint32_t value_position;
 
-        FrozenHashMapHashPosition(uint64_t hv, off_t vp) :
+        FrozenHashMapHashPosition(uint32_t hv, uint32_t vp) :
             hash_value(hv), value_position(vp) {}
         FrozenHashMapHashPosition() : hash_value(0), value_position(0) {}
     };

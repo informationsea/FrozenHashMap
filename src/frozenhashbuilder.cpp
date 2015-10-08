@@ -20,6 +20,19 @@
 
 namespace frozenhashmap {
 
+    struct FrozenMapBuilderHashValue {
+        uint64_t hash_value[2];
+        off_t value_position;
+
+        FrozenMapBuilderHashValue(uint64_t hv[], uint32_t vp) :
+            value_position(vp) {
+            hash_value[0] = hv[0];
+            hash_value[1] = hv[1];
+        }
+        FrozenMapBuilderHashValue() : value_position(0) {}
+    };
+    
+
 #define PAGE_ALIGNMENT (1024*4)
 #define DEBUG(fmt,...) (debugMode && fprintf(stderr, __FILE__ ": %3d: " fmt "\n" ,__LINE__, ## __VA_ARGS__))
     static bool debugMode = false;
@@ -110,8 +123,9 @@ namespace frozenhashmap {
 
         uint64_t hashvalue[2];
         MurmurHash3_x64_128(key, keylen, HASH_RANDOM_SEED, hashvalue);
-        //fprintf(stderr, "PUT %s %lu = %llu\n", key, keylen, hashvalue[0]);
-        FrozenHashMapHashPosition position(hashvalue[0], pos);
+        //fprintf(stderr, "PUT %s %lu = %llx\n", key, keylen, hashvalue[0]);
+        FrozenMapBuilderHashValue position(hashvalue, pos);
+        //FrozenHashMapHashPosition position((uint32_t)hashvalue[0], pos);
         if (fwrite(&position, sizeof(position), 1, hash2position_file) != 1) {
             ready = false;
             return false;
@@ -127,7 +141,7 @@ namespace frozenhashmap {
 
         FrozenHashMapHeader header;
         header.count = entryCount;
-        header.hashsize = ceiling(entryCount * 2, EXPECTED_PAGE_SIZE/sizeof(struct FrozenHashMapHashPosition));
+        header.hashsize = ceiling(entryCount * HASH_SIZE_FACTOR, EXPECTED_PAGE_SIZE/sizeof(struct FrozenHashMapHashPosition));
         header.hashtable_offset = ceiling(sizeof(FrozenHashMapHeader), EXPECTED_PAGE_SIZE);
         header.hashtable_size = header.hashsize*sizeof(struct FrozenHashMapHashPosition);
         header.valuetable_offset = ceiling(header.hashtable_offset + header.hashtable_size, EXPECTED_PAGE_SIZE);
@@ -157,6 +171,9 @@ namespace frozenhashmap {
 
         if (onmemory) {
             hashtable = (struct FrozenHashMapHashPosition *)malloc(header.hashtable_size);
+            if (hashtable == NULL)
+                return false;
+            
             memset(hashtable, 0xff, header.hashtable_size);
         } else {
             hashtable = (struct FrozenHashMapHashPosition *)mmap(NULL,
@@ -164,10 +181,10 @@ namespace frozenhashmap {
                                                                  PROT_WRITE|PROT_READ,
                                                                  MAP_FILE|MAP_SHARED,
                                                                  fd, header.hashtable_offset);
+            if (hashtable == MAP_FAILED)
+                return false;
         }
         
-        if (hashtable == MAP_FAILED)
-            return false;
 
         FrozenHashMapHashPosition empty;
         memset(&empty, 0xff, sizeof(empty));
@@ -175,14 +192,15 @@ namespace frozenhashmap {
         if (fseeko(hash2position_file, 0, SEEK_SET) != 0) return false;
         for (size_t i = 0; i < entryCount; i++) {
             DEBUG("NEW Entry");
-            struct FrozenHashMapHashPosition pos;
+            struct FrozenMapBuilderHashValue pos;
             if (fread(&pos, sizeof(pos), 1, hash2position_file) != 1) return false;
-            size_t candidatePos = pos.hash_value % header.hashsize;
+            size_t candidatePos = pos.hash_value[1] % header.hashsize;
             do {
-                DEBUG("Candidate Pos: %zu  "UINT64UF" "UINT64UF" "UINT64UF" %p", candidatePos, header.hashsize, lseek(fd, 0, SEEK_CUR), header.valuetable_offset, hashtable + candidatePos);
-                DEBUG("Data : "INT64DF, hashtable[candidatePos].value_position);
+                DEBUG("Candidate Pos: %llx %zx  "UINT64UF" "UINT64UF" "UINT64UF" %p", pos.hash_value[0], candidatePos, header.hashsize, lseek(fd, 0, SEEK_CUR), header.valuetable_offset, hashtable + candidatePos);
+                DEBUG("Data : %d", hashtable[candidatePos].value_position);
                 if (memcmp(hashtable + candidatePos, &empty, sizeof(empty)) == 0) {
-                    hashtable[candidatePos] = pos;
+                    struct FrozenHashMapHashPosition hashPosition(pos.hash_value[0], pos.value_position/VALUE_TABLE_ALIGNMENT_BYTES);
+                    hashtable[candidatePos] = hashPosition;
                     break;
                 }
                 candidatePos = (candidatePos + 1) % header.hashsize;

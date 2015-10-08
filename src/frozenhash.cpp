@@ -138,7 +138,7 @@ namespace frozenhashmap {
     {
         uint64_t hash[2];
         MurmurHash3_x64_128(key, keysp, HASH_RANDOM_SEED, hash);
-        size_t table_position = hash[0] % header->hashsize;
+        size_t table_position = hash[1] % header->hashsize;
         //fprintf(stderr, "GET %s %lu = %llu\n", key, keysp, hash[0]);
 
         FrozenHashMapHashPosition empty;
@@ -146,17 +146,17 @@ namespace frozenhashmap {
         
         do {
             do {
-                //fprintf(stderr, "table_position = %lu // %llu // %llx // %llx\n", table_position, header->hashsize, hashtable_map[table_position].hash_value, hashtable_map[table_position].value_position);
-                //if (memcmp(hashtable_map + table_position, &empty, sizeof(empty)) == 0)
-                if (hashtable_map[table_position].value_position == (off_t)UINT64_MAX)
+                if (hashtable_map[table_position].value_position == UINT32_MAX) {
+                    // DEBUG("Not found %s", key);
                     return NULL; // Not found
-                
-                if (hashtable_map[table_position].hash_value == hash[0])
+                }
+
+                if (hashtable_map[table_position].hash_value == (uint32_t)hash[0])
                     break; // found hash equally entry
                 table_position = (table_position + 1) % header->hashsize;
             } while (1);
             
-            off_t key_position = hashtable_map[table_position].value_position;
+            off_t key_position = hashtable_map[table_position].value_position * VALUE_TABLE_ALIGNMENT_BYTES;
             //fprintf(stderr, "key position = %LLD\n", key_position);
             off_t value_position;
             uint32_t keylen;

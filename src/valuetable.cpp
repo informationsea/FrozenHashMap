@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include "common.hpp"
 
 namespace frozenhashmap {
     using namespace frozenhashmap_private;
