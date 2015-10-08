@@ -16,6 +16,7 @@
 #include "common.hpp"
 
 #define DEBUG(fmt,...) (fprintf(stderr, __FILE__ ": %3d: " fmt "\n" ,__LINE__, ## __VA_ARGS__))
+#define FILE_READ_BLOCK (1024*1024*200)
 
 namespace frozenhashmap {
 
@@ -86,14 +87,12 @@ namespace frozenhashmap {
                 char *readPosition = (char *)hashtable_map;
                 
                 while (remainBytes > 0) {
-                    ssize_t readBytes = read(m_fd, readPosition, remainBytes);
+                    ssize_t readBytes = read(m_fd, readPosition, MIN(FILE_READ_BLOCK, remainBytes));
                     if (readBytes < 0) return false;
                     readPosition += readBytes;
                     remainBytes -= readBytes;
                 }
             }
-
-
         } else {
             hashtable_map = (FrozenHashMapHashPosition *)mmap(NULL, header->hashtable_size, PROT_READ, MAP_PRIVATE,
                                                               m_fd, offset + header->hashtable_offset);
@@ -112,19 +111,19 @@ namespace frozenhashmap {
                                   -1, 0);
             if (valuetable_map == MAP_FAILED)
                 return false;
+
             if (lseek(m_fd, offset + header->valuetable_offset, SEEK_SET) != offset + (off_t)header->valuetable_offset) return false;
             {
                 ssize_t remainBytes = (ssize_t)header->valuetable_size;
                 char *readPosition = (char *)valuetable_map;
                 
                 while (remainBytes > 0) {
-                    ssize_t readBytes = read(m_fd, readPosition, remainBytes);
+                    ssize_t readBytes = read(m_fd, readPosition, MIN(remainBytes, FILE_READ_BLOCK));
                     if (readBytes < 0) return false;
                     readPosition += readBytes;
                     remainBytes -= readBytes;
                 }
             }
-            
         } else {
             valuetable_map = mmap(NULL, header->valuetable_size, PROT_READ, MAP_PRIVATE,
                                   m_fd, offset + header->valuetable_offset);
@@ -148,7 +147,8 @@ namespace frozenhashmap {
         do {
             do {
                 //fprintf(stderr, "table_position = %lu // %llu // %llx // %llx\n", table_position, header->hashsize, hashtable_map[table_position].hash_value, hashtable_map[table_position].value_position);
-                if (memcmp(hashtable_map + table_position, &empty, sizeof(empty)) == 0)
+                //if (memcmp(hashtable_map + table_position, &empty, sizeof(empty)) == 0)
+                if (hashtable_map[table_position].value_position == (off_t)UINT64_MAX)
                     return NULL; // Not found
                 
                 if (hashtable_map[table_position].hash_value == hash[0])
