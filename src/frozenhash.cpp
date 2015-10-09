@@ -141,9 +141,6 @@ namespace frozenhashmap {
         size_t table_position = hash[1] % header->hashsize;
         //fprintf(stderr, "GET %s %lu = %llu\n", key, keysp, hash[0]);
 
-        FrozenHashMapHashPosition empty;
-        memset(&empty, 0xff, sizeof(empty));
-        
         do {
             do {
                 if (hashtable_map[table_position].value_position == UINT32_MAX) {
