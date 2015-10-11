@@ -6,7 +6,6 @@
 #include <string>
 #include <functional>
 #include <vector>
-#include "mutablehash.hpp"
 
 namespace frozenhashmap {
     class ValueTableWriter;
