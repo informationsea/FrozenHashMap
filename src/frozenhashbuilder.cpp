@@ -196,7 +196,7 @@ namespace frozenhashmap {
             if (fread(&pos, sizeof(pos), 1, hash2position_file) != 1) return false;
             size_t candidatePos = pos.hash_value[1] % header.hashsize;
             do {
-                DEBUG("Candidate Pos: %llx %zx  "UINT64UF" "UINT64UF" "UINT64UF" %p", pos.hash_value[0], candidatePos, header.hashsize, lseek(fd, 0, SEEK_CUR), header.valuetable_offset, hashtable + candidatePos);
+                //DEBUG("Candidate Pos: %llx %zx  "UINT64UF" "UINT64UF" "UINT64UF" %p", pos.hash_value[0], candidatePos, header.hashsize, lseek(fd, 0, SEEK_CUR), header.valuetable_offset, hashtable + candidatePos);
                 DEBUG("Data : %d", hashtable[candidatePos].value_position);
                 if (memcmp(hashtable + candidatePos, &empty, sizeof(empty)) == 0) {
                     struct FrozenHashMapHashPosition hashPosition(pos.hash_value[0], pos.value_position/VALUE_TABLE_ALIGNMENT_BYTES);

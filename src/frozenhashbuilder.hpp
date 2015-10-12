@@ -6,6 +6,7 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <limits.h>
 
 namespace frozenhashmap {
     class ValueTableWriter;
