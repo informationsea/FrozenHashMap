@@ -4,6 +4,7 @@ test_frozenhash_cbinding
 test_mutable_value_table
 test_mutablehash
 test_common
+test_bloomfilter
 .dirstamp
 *.log
 *.trs
